@@ -1,0 +1,10 @@
+LINUX / MX LINUX - SESION 2 (SOLO SUPABASE)
+
+1) Descomprime dentro de tu HOME.
+2) chmod +x scripts/*.sh
+3) ./scripts/00_PREPARAR_LINUX.sh
+4) Crea config/local.json con URL + Publishable Key.
+5) ./scripts/01_MENU_LINUX.sh
+6) Elige SUPABASE en Android o Chrome.
+7) Si Ninja falla: ./scripts/98_REPARAR_NINJA_LINUX.sh
+8) No uses flutter pub upgrade.

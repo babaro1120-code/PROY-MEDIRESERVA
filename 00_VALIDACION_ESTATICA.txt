@@ -1,0 +1,7 @@
+VALIDACION ESTATICA REFORZADA
+================================
+OK - Todos los Dart pasan escaneo lexical/brackets
+OK - Sin (_, _) conflictivo
+OK - Sin DropdownButtonFormField value deprecado
+OK - Usa initialValue actual
+OK - Sin service_role en Dart
