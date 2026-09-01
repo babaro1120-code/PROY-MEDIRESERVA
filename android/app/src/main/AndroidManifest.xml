@@ -7,7 +7,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
 
     <application
-        android:label="Proyecto Final 360"
+        android:label="Proyecto Final MEDIRESERVA"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

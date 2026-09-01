@@ -5,7 +5,7 @@ cd /d "%~dp0\.."
 :menu
 cls
 echo ============================================================
-echo PROYECTO FINAL 360 - SESION 2 - WINDOWS
+echo PROYECTO FINAL MEDIRESERVA - WINDOWS
 echo ============================================================
 echo 1. SUPABASE - elegir dispositivo
 echo 2. SUPABASE - Chrome
