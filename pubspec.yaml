@@ -1,37 +1,20 @@
-name: MEDIRESERVA
-description: "Proyecto MEDIRESERVA - base adaptada del proyecto acumulativo (asincronia, API REST, GPS, mapa y Supabase)."
-publish_to: "none"
-version: 3.0.0+1
+name: medireserva
+publish_to: 'none'
+description: Sistema de reservas de consultas médicas MediReserva.
+version: 1.0.0+1
 
 environment:
-  sdk: ">=3.9.0 <4.0.0"
-  flutter: ">=3.35.0"
+  sdk: '>=3.5.0 <4.0.0'
 
 dependencies:
   flutter:
     sdk: flutter
-  
-  # Proveedores y estado
-  provider: ^6.1.1
-  
-  # Calendario
-  table_calendar: ^3.1.2
-  intl: ^0.19.0
-  
-  # Almacenamiento y backend
-  shared_preferences: ^2.5.5
-  supabase_flutter: ^2.17.2
-  http: ^1.6.0
-  
-  # Geolocalización y mapas
-  geolocator: ^14.0.3
-  flutter_map: ^8.3.2
-  latlong2: ^0.10.1
+  supabase_flutter: ^2.8.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^3.0.0  # Recomendado para mejores prácticas
+  flutter_lints: ^5.0.0
 
 flutter:
   uses-material-design: true

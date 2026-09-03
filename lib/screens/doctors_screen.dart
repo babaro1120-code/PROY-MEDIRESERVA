@@ -1,264 +1,82 @@
 import 'package:flutter/material.dart';
-import 'appointment_datetime_screen.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-class Doctor {
-  final String name;
-  final String specialty;
-  final double rating;
-  final int experience;
-  final String avatar;
+import '../models/medireserva_models.dart';
+import '../services/medireserva_service.dart';
+import '../widgets/medireserva_ui.dart';
+import 'calendar_screen.dart';
 
-  const Doctor({
-    required this.name,
-    required this.specialty,
-    required this.rating,
-    required this.experience,
-    required this.avatar,
-  });
+class DoctorsScreen extends StatefulWidget {
+  const DoctorsScreen({super.key, required this.specialty});
+  final Specialty specialty;
+  @override
+  State<DoctorsScreen> createState() => _DoctorsScreenState();
 }
 
-class DoctorsScreen extends StatelessWidget {
-  final String specialty;
+class _DoctorsScreenState extends State<DoctorsScreen> {
+  late Future<List<Doctor>> _future;
 
-  const DoctorsScreen({
-    super.key,
-    required this.specialty,
-  });
-
-  List<Doctor> _doctors(String specialty) {
-    switch (specialty) {
-      case "Cardiología":
-        return const [
-          Doctor(
-            name: "Dr. Andrés Torres",
-            specialty: "Cardiología",
-            rating: 4.9,
-            experience: 12,
-            avatar: "👨🏻‍⚕️",
-          ),
-          Doctor(
-            name: "Dra. María Castro",
-            specialty: "Cardiología",
-            rating: 4.8,
-            experience: 10,
-            avatar: "👩🏻‍⚕️",
-          ),
-          Doctor(
-            name: "Dr. Luis Herrera",
-            specialty: "Cardiología",
-            rating: 4.7,
-            experience: 8,
-            avatar: "👨🏻‍⚕️",
-          ),
-        ];
-
-      case "Pediatría":
-        return const [
-          Doctor(
-            name: "Dra. Sofía López",
-            specialty: "Pediatría",
-            rating: 4.9,
-            experience: 11,
-            avatar: "👩🏻‍⚕️",
-          ),
-          Doctor(
-            name: "Dr. Miguel Ruiz",
-            specialty: "Pediatría",
-            rating: 4.8,
-            experience: 9,
-            avatar: "👨🏻‍⚕️",
-          ),
-        ];
-
-      default:
-        return [
-          Doctor(
-            name: "Dra. Ana López",
-            specialty: specialty,
-            rating: 4.9,
-            experience: 7,
-            avatar: "👩🏻‍⚕️",
-          ),
-          Doctor(
-            name: "Dr. Juan Pérez",
-            specialty: specialty,
-            rating: 4.8,
-            experience: 6,
-            avatar: "👨🏻‍⚕️",
-          ),
-          Doctor(
-            name: "Dra. Laura Gómez",
-            specialty: specialty,
-            rating: 4.7,
-            experience: 5,
-            avatar: "👩🏻‍⚕️",
-          ),
-          Doctor(
-            name: "Dr. Carlos Méndez",
-            specialty: specialty,
-            rating: 4.6,
-            experience: 8,
-            avatar: "👨🏻‍⚕️",
-          ),
-        ];
-    }
+  @override
+  void initState() {
+    super.initState();
+    _future = MediReservaService(Supabase.instance.client).getDoctorsBySpecialty(widget.specialty.id);
   }
 
   @override
   Widget build(BuildContext context) {
-    final doctors = _doctors(specialty);
-
-    return Scaffold(
-      backgroundColor: const Color(0xffF5F8FC),
-
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Column(
-            children: [
-
-              Row(
-                children: [
-
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-
-                  const Spacer(),
-
-                  Column(
-                    children: const [
-
-                      Text(
-                        "Médicos disponibles",
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xff132C67),
-                        ),
-                      ),
-
-                      SizedBox(height: 2),
-
-                      Text(
-                        "Paso 3 de 6",
-                        style: TextStyle(
-                          color: Color(0xff0A66FF),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const Spacer(),
-                  const SizedBox(width: 40),
-                ],
-              ),
-
-              const SizedBox(height: 25),
-
-              Expanded(
-                child: ListView.builder(
-                  itemCount: doctors.length,
-                  itemBuilder: (_, index) {
-
-                    final doctor = doctors[index];
-
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 14),
-                      elevation: 1,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: ListTile(
-
-                        contentPadding:
-                            const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 10,
-                        ),
-
-                        leading: CircleAvatar(
-                          radius: 28,
-                          backgroundColor: Colors.blue.shade50,
-                          child: Text(
-                            doctor.avatar,
-                            style: const TextStyle(fontSize: 28),
-                          ),
-                        ),
-
-                        title: Text(
-                          doctor.name,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-
-                        subtitle: Padding(
-                          padding:
-                              const EdgeInsets.only(top: 5),
-                          child: Row(
-                            children: [
-
-                              Expanded(
-                                child: Text(
-                                  doctor.specialty,
-                                ),
-                              ),
-
-                              const Icon(
-                                Icons.star,
-                                color: Colors.orange,
-                                size: 18,
-                              ),
-
-                              Text(
-                                doctor.rating.toString(),
-                              ),
-
-                              const SizedBox(width: 14),
-
-                              Text(
-                                "${doctor.experience} años exp.",
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        trailing: const Icon(
-                          Icons.chevron_right,
-                        ),
-
-                       onTap: () {
-
-    Navigator.push(
-
-        context,
-
-        MaterialPageRoute(
-
-            builder: (_) => AppointmentDateTimeScreen(
-
-                doctorName: doctor.name,
-
-                specialty: doctor.specialty,
-
-            ),
-
-        ),
-
-    );
-    },
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
+    return MediReservaPage(
+      title: 'Médicos disponibles',
+      step: 'Paso 3 de 6',
+      child: FutureBuilder<List<Doctor>>(
+        future: _future,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: Padding(padding: EdgeInsets.all(30), child: CircularProgressIndicator(strokeWidth: 2)));
+          if (snapshot.hasError) return _error(snapshot.error.toString());
+          final doctors = snapshot.data ?? const <Doctor>[];
+          if (doctors.isEmpty) return _error('No hay médicos disponibles para esta especialidad.');
+          return Column(children: [
+            Text(widget.specialty.name, style: const TextStyle(color: kMediMuted, fontSize:13.6, fontWeight: FontWeight.w600)),
+            const SizedBox(height:9.1),
+            ...doctors.map(_doctorCard),
+          ]);
+        },
       ),
     );
   }
+
+  Widget _doctorCard(Doctor doctor) => Padding(
+        padding: const EdgeInsets.only(bottom: 7),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(7),
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => CalendarScreen(specialty: widget.specialty, doctor: doctor))),
+          child: Container(
+            height: 53,
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            decoration: BoxDecoration(border: Border.all(color: const Color(0xFFE0E6EE)), borderRadius: BorderRadius.circular(7)),
+            child: Row(children: [
+              CircleAvatar(
+                radius: 18,
+                backgroundColor: const Color(0xFFEAF2FF),
+                backgroundImage: doctor.photoUrl == null ? null : NetworkImage(doctor.photoUrl!),
+                child: doctor.photoUrl == null ? const Icon(Icons.person, color: kMediBlue, size:31) : null,
+              ),
+              const SizedBox(width:11.7),
+              Expanded(child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(doctor.name, style: const TextStyle(color: kMediText, fontSize:14.4, fontWeight: FontWeight.bold)),
+                const SizedBox(height:3.9),
+                Text(widget.specialty.name, style: const TextStyle(color: kMediMuted, fontSize:12)),
+              ])),
+              Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.end, children: [
+                Text('★ ${doctor.rating.toStringAsFixed(1)}', style: const TextStyle(color: Color(0xFFF5A000), fontSize:12, fontWeight: FontWeight.bold)),
+                const SizedBox(height:3.9),
+                Text('${doctor.experienceYears} años exp.', style: const TextStyle(color: kMediMuted, fontSize:11.2)),
+              ]),
+              const SizedBox(width:5.2),
+              const Icon(Icons.chevron_right, size:23, color: kMediMuted),
+            ]),
+          ),
+        ),
+      );
+
+  Widget _error(String message) => Padding(padding: const EdgeInsets.all(20), child: Column(children: [const Icon(Icons.person_off_outlined, color: kMediMuted, size:40.5), const SizedBox(height:10.4), Text(message, textAlign: TextAlign.center, style: const TextStyle(color: kMediMuted, fontSize:12.8))]));
 }

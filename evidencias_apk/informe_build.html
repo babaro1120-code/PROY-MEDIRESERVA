@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Informe build APK — MEDIRESERVA</title>
+<style>
+  body { font-family: 'Segoe UI', Arial, sans-serif; background:#0d1117; color:#e6edf3; margin:0; padding:28px; }
+  .card { background:#161b22; border:1px solid #30363d; border-radius:10px; padding:22px 26px; margin-bottom:16px; }
+  h1 { color:#58a6ff; font-size:22px; margin:0 0 4px 0; }
+  .sub { color:#8b949e; font-size:13px; margin-bottom:14px; }
+  h2 { color:#79c0ff; font-size:15px; margin:0 0 10px 0; }
+  .paso { display:flex; align-items:flex-start; gap:10px; margin-bottom:12px; }
+  .num { background:#1f6feb; color:#fff; border-radius:50%; width:22px; height:22px; min-width:22px; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:600; }
+  .contenido { flex:1; }
+  .cmd { background:#0d1117; border:1px solid #30363d; border-left:3px solid #1f6feb; border-radius:5px; padding:8px 12px; font-family:Consolas,monospace; font-size:13px; color:#a5d6ff; white-space:pre-wrap; word-break:break-all; }
+  .ok { color:#3fb950; font-weight:600; }
+  .tabla { width:100%; border-collapse:collapse; font-size:13px; }
+  .tabla td { padding:6px 10px; border-bottom:1px solid #21262d; }
+  .tabla td:first-child { color:#8b949e; width:150px; }
+  .log { background:#0d1117; border:1px solid #30363d; border-radius:5px; padding:10px 12px; font-family:Consolas,monospace; font-size:11px; color:#9da7b3; white-space:pre-wrap; max-height:260px; overflow:hidden; }
+  .verde { color:#3fb950; }
+  .resaltado { color:#ffa657; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>Proyecto MEDIRESERVA — Generación de la APK</h1>
+    <div class="sub">Flutter · Android · Supabase &nbsp;|&nbsp; Fecha: 03/09/2026</div>
+
+    <h2>Pasos del proceso</h2>
+
+    <div class="paso"><div class="num">1</div><div class="contenido">
+      <b>Verificación estática del código</b>
+      <div class="cmd">flutter analyze</div>
+      <div><span class="ok">✔ No issues found!</span> (sin errores antes de compilar)</div>
+    </div></div>
+
+    <div class="paso"><div class="num">2</div><div class="contenido">
+      <b>Compilación de la APK (release)</b>
+      <div class="cmd">flutter build apk --release</div>
+    </div></div>
+
+    <div class="paso"><div class="num">3</div><div class="contenido">
+      <b>Resultado de la compilación</b>
+      <div class="log">WARNING: A restricted method in java.lang.System has been called (Gradle 9.1.0)
+Warning: SDK processing... (aviso del SDK de Android, no bloquea)
+Font asset "MaterialIcons-Regular.otf" was tree-shaken, reducing it from 1645184 to 6404 bytes (99.6% reduction).
+Running Gradle task 'assembleRelease'... 325,0s
+<span class="verde">√ Built build\app\outputs\flutter-apk\app-release.apk (42.7MB)</span></div>
+    </div></div>
+
+    <div class="paso"><div class="num">4</div><div class="contenido">
+      <b>APK generada</b>
+      <table class="tabla">
+        <tr><td>Archivo</td><td class="resaltado">app-release.apk</td></tr>
+        <tr><td>Ubicación</td><td>build\app\outputs\flutter-apk\app-release.apk</td></tr>
+        <tr><td>Tamaño</td><td>42,7 MB</td></tr>
+        <tr><td>Application ID</td><td>bo.edu.uajms.medireserva</td></tr>
+        <tr><td>Firma</td><td>Debug (clave de práctica)</td></tr>
+      </table>
+    </div></div>
+  </div>
+</body>
+</html>

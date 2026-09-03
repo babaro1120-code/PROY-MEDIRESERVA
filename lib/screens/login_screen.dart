@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../services/auth_service.dart';
+import '../widgets/medireserva_ui.dart';
+import 'register_screen.dart';
+import 'recovery_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -12,639 +15,227 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-
-  bool _registerMode = false;
+  final _email = TextEditingController();
+  final _password = TextEditingController();
   bool _busy = false;
-  bool _obscurePassword = true;
-
+  bool _obscure = true;
   String? _message;
+  bool _error = false;
 
   @override
   void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
+    _email.dispose();
+    _password.dispose();
     super.dispose();
   }
 
-  // ============================================================
-  // LOGIN / REGISTRO
-  // ============================================================
-
-  Future<void> _submit() async {
+  Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
-
     setState(() {
       _busy = true;
       _message = null;
+      _error = false;
     });
-
     try {
-      final service = AuthService(
-        Supabase.instance.client,
+      await AuthService(Supabase.instance.client).signIn(
+        email: _email.text,
+        password: _password.text,
       );
-
-      if (_registerMode) {
-        final result = await service.signUp(
-          email: _emailController.text.trim(),
-          password: _passwordController.text,
-        );
-
-        if (mounted) {
-          setState(() {
-            _message = result;
-          });
-        }
-      } else {
-        await service.signIn(
-          email: _emailController.text.trim(),
-          password: _passwordController.text,
-        );
-      }
-    } on AuthException catch (error) {
-      if (mounted) {
+    } on AuthException catch (e) {
+      if (mounted)
         setState(() {
-          _message = error.message;
+          _message = _friendly(e.message);
+          _error = true;
         });
-      }
-    } catch (error) {
-      if (mounted) {
+    } catch (e) {
+      if (mounted)
         setState(() {
-          _message = 'Ocurrió un error: $error';
+          _message = 'No fue posible iniciar sesión.';
+          _error = true;
         });
-      }
     } finally {
-      if (mounted) {
-        setState(() {
-          _busy = false;
-        });
-      }
+      if (mounted) setState(() => _busy = false);
     }
   }
 
-  // ============================================================
-  // RECUPERAR CONTRASEÑA
-  // ============================================================
-
-  Future<void> _forgotPassword() async {
-    final email = _emailController.text.trim();
-
-    if (email.isEmpty || !email.contains('@')) {
-      setState(() {
-        _message =
-            'Ingresa tu correo electrónico para recuperar tu contraseña.';
-      });
-      return;
-    }
-
-    try {
-      setState(() {
-        _busy = true;
-        _message = null;
-      });
-
-      await Supabase.instance.client.auth.resetPasswordForEmail(
-        email,
-      );
-
-      if (mounted) {
-        setState(() {
-          _message =
-              'Se ha enviado un enlace de recuperación a tu correo.';
-        });
-      }
-    } on AuthException catch (error) {
-      if (mounted) {
-        setState(() {
-          _message = error.message;
-        });
-      }
-    } catch (error) {
-      if (mounted) {
-        setState(() {
-          _message = 'Error al recuperar la contraseña.';
-        });
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _busy = false;
-        });
-      }
-    }
+  String _friendly(String message) {
+    final m = message.toLowerCase();
+    if (m.contains('invalid login credentials'))
+      return 'Correo o contraseña incorrectos.';
+    if (m.contains('email not confirmed'))
+      return 'Confirma tu correo electrónico antes de iniciar sesión.';
+    return message;
   }
-
-  // ============================================================
-  // CAMBIAR ENTRE LOGIN Y REGISTRO
-  // ============================================================
-
-  void _toggleRegisterMode() {
-    setState(() {
-      _registerMode = !_registerMode;
-      _message = null;
-    });
-  }
-
-  // ============================================================
-  // INTERFAZ
-  // ============================================================
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F7FF),
-
+      backgroundColor: kMediBg,
       body: SafeArea(
-        child: Stack(
-          children: [
-            // ----------------------------------------------------
-            // DECORACIÓN INFERIOR
-            // ----------------------------------------------------
-
-            Positioned(
-              left: -35,
-              bottom: -45,
-              child: _cloud(
-                width: 130,
-                height: 95,
-              ),
-            ),
-
-            Positioned(
-              right: -35,
-              bottom: -45,
-              child: _cloud(
-                width: 130,
-                height: 95,
-              ),
-            ),
-
-            Positioned(
-              left: 55,
-              bottom: -60,
-              child: _cloud(
-                width: 100,
-                height: 70,
-              ),
-            ),
-
-            Positioned(
-              right: 55,
-              bottom: -60,
-              child: _cloud(
-                width: 100,
-                height: 70,
-              ),
-            ),
-
-            // ----------------------------------------------------
-            // CONTENIDO PRINCIPAL
-            // ----------------------------------------------------
-
-            Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 24,
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(14),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 380),
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(28, 22, 28, 20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                        color: Colors.black.withValues(alpha: .06),
+                        blurRadius: 16)
+                  ],
                 ),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(
-                    maxWidth: 360,
-                  ),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.blueGrey.withOpacity(0.10),
-                          blurRadius: 15,
-                          offset: const Offset(0, 5),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      const _Logo(),
+                      const SizedBox(height: 9.1),
+                      const Text('MEDIRESERVA',
+                          style: TextStyle(
+                              color: kMediDark,
+                              fontSize: 27.2,
+                              fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 3.9),
+                      const Text('Sistema de Reservas de Consultas Médicas',
+                          style: TextStyle(color: kMediMuted, fontSize: 12.8)),
+                      const SizedBox(height: 23.4),
+                      _field('Correo electrónico', _email, Icons.mail_outline,
+                          keyboardType: TextInputType.emailAddress,
+                          validator: (v) {
+                        if (v == null || !v.contains('@'))
+                          return 'Ingresa un correo válido';
+                        return null;
+                      }),
+                      const SizedBox(height: 13),
+                      _field('Contraseña', _password, Icons.lock_outline,
+                          obscure: _obscure,
+                          suffix: IconButton(
+                            onPressed: () =>
+                                setState(() => _obscure = !_obscure),
+                            icon: Icon(
+                                _obscure
+                                    ? Icons.visibility_outlined
+                                    : Icons.visibility_off_outlined,
+                                size: 23,
+                                color: kMediMuted),
+                          ),
+                          validator: (v) => v == null || v.length < 6
+                              ? 'Mínimo 6 caracteres'
+                              : null),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                          onPressed: _busy
+                              ? null
+                              : () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) => const RecoveryScreen())),
+                          child: const Text('¿Olvidaste tu contraseña?',
+                              style:
+                                  TextStyle(color: kMediBlue, fontSize: 12.8)),
                         ),
-                      ],
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(
-                        32,
-                        20,
-                        32,
-                        25,
                       ),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          crossAxisAlignment:
-                              CrossAxisAlignment.stretch,
+                      if (_message != null)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 9),
+                          child: Text(_message!,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  color: _error
+                                      ? Colors.red
+                                      : const Color(0xFF138A4A),
+                                  fontSize: 12.8)),
+                        ),
+                      MediButton(
+                          label:
+                              _busy ? 'Iniciando sesión...' : 'Iniciar sesión',
+                          onPressed: _busy ? null : _login),
+                      const SizedBox(height: 6.5),
+                      Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-
-                            // =================================================
-                            // LOGO
-                            // =================================================
-
-                            Center(
-                              child: Container(
-                                width: 52,
-                                height: 52,
-                                decoration: const BoxDecoration(
-                                  color: Color(0xFF075BD8),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  Icons.add,
-                                  color: Colors.white,
-                                  size: 38,
-                                  weight: 800,
-                                ),
-                              ),
-                            ),
-
-                            const SizedBox(height: 8),
-
-                            // =================================================
-                            // NOMBRE DE LA APLICACIÓN
-                            // =================================================
-
-                            const Text(
-                              'MEDIRESERVA',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: Color(0xFF122B6B),
-                                fontSize: 17,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 0.3,
-                              ),
-                            ),
-
-                            const SizedBox(height: 2),
-
-                            const Text(
-                              'Sistema de Reservas de Consultas Médicas',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: Color(0xFF52617A),
-                                fontSize: 8.5,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-
-                            const SizedBox(height: 22),
-
-                            // =================================================
-                            // CORREO
-                            // =================================================
-
-                            const Text(
-                              'Correo electrónico',
-                              style: TextStyle(
-                                color: Color(0xFF16264A),
-                                fontSize: 9.5,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-
-                            const SizedBox(height: 5),
-
-                            TextFormField(
-                              controller: _emailController,
-                              keyboardType:
-                                  TextInputType.emailAddress,
-                              textInputAction:
-                                  TextInputAction.next,
-
-                              decoration: InputDecoration(
-                                hintText: 'ejemplo@correo.com',
-                                hintStyle: const TextStyle(
-                                  color: Color(0xFF9AA6B8),
-                                  fontSize: 10,
-                                ),
-                                filled: true,
-                                fillColor: Colors.white,
-
-                                contentPadding:
-                                    const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 12,
-                                ),
-
-                                enabledBorder:
-                                    OutlineInputBorder(
-                                  borderRadius:
-                                      BorderRadius.circular(5),
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFFD9E1EC),
-                                    width: 1,
-                                  ),
-                                ),
-
-                                focusedBorder:
-                                    OutlineInputBorder(
-                                  borderRadius:
-                                      BorderRadius.circular(5),
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFF075BD8),
-                                    width: 1.2,
-                                  ),
-                                ),
-                              ),
-
-                              style: const TextStyle(
-                                fontSize: 11,
-                                color: Color(0xFF1B2A41),
-                              ),
-
-                              validator: (value) {
-                                if (value == null ||
-                                    value.trim().isEmpty) {
-                                  return 'Ingresa tu correo';
-                                }
-
-                                if (!value.contains('@')) {
-                                  return 'Correo electrónico inválido';
-                                }
-
-                                return null;
-                              },
-                            ),
-
-                            const SizedBox(height: 12),
-
-                            // =================================================
-                            // CONTRASEÑA
-                            // =================================================
-
-                            const Text(
-                              'Contraseña',
-                              style: TextStyle(
-                                color: Color(0xFF16264A),
-                                fontSize: 9.5,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-
-                            const SizedBox(height: 5),
-
-                            TextFormField(
-                              controller: _passwordController,
-                              obscureText: _obscurePassword,
-                              textInputAction:
-                                  TextInputAction.done,
-
-                              decoration: InputDecoration(
-                                hintText: '••••••••••',
-                                hintStyle: const TextStyle(
-                                  color: Color(0xFF7D8797),
-                                  fontSize: 11,
-                                ),
-
-                                filled: true,
-                                fillColor: Colors.white,
-
-                                contentPadding:
-                                    const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 12,
-                                ),
-
-                                suffixIcon: IconButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      _obscurePassword =
-                                          !_obscurePassword;
-                                    });
-                                  },
-                                  icon: Icon(
-                                    _obscurePassword
-                                        ? Icons.visibility_outlined
-                                        : Icons
-                                            .visibility_off_outlined,
-                                    size: 17,
-                                    color:
-                                        const Color(0xFF64748B),
-                                  ),
-                                ),
-
-                                enabledBorder:
-                                    OutlineInputBorder(
-                                  borderRadius:
-                                      BorderRadius.circular(5),
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFFD9E1EC),
-                                    width: 1,
-                                  ),
-                                ),
-
-                                focusedBorder:
-                                    OutlineInputBorder(
-                                  borderRadius:
-                                      BorderRadius.circular(5),
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFF075BD8),
-                                    width: 1.2,
-                                  ),
-                                ),
-                              ),
-
-                              style: const TextStyle(
-                                fontSize: 11,
-                                color: Color(0xFF1B2A41),
-                              ),
-
-                              validator: (value) {
-                                if (value == null ||
-                                    value.isEmpty) {
-                                  return 'Ingresa tu contraseña';
-                                }
-
-                                if (value.length < 6) {
-                                  return 'Mínimo 6 caracteres';
-                                }
-
-                                return null;
-                              },
-
-                              onFieldSubmitted: (_) {
-                                if (!_busy) {
-                                  _submit();
-                                }
-                              },
-                            ),
-
-                            // =================================================
-                            // RECUPERAR CONTRASEÑA
-                            // =================================================
-
-                            if (!_registerMode) ...[
-                              const SizedBox(height: 8),
-
-                              Align(
-                                alignment: Alignment.centerRight,
-                                child: TextButton(
-                                  onPressed: _busy
-                                      ? null
-                                      : _forgotPassword,
-                                  style: TextButton.styleFrom(
-                                    padding: EdgeInsets.zero,
-                                    minimumSize: Size.zero,
-                                    tapTargetSize:
-                                        MaterialTapTargetSize
-                                            .shrinkWrap,
-                                  ),
-                                  child: const Text(
-                                    '¿Olvidaste tu contraseña?',
+                            const Text('¿No tienes cuenta? ',
+                                style: TextStyle(
+                                    color: kMediMuted, fontSize: 12.8)),
+                            TextButton(
+                                onPressed: _busy
+                                    ? null
+                                    : () => Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (_) =>
+                                                const RegisterScreen())),
+                                child: const Text('Regístrate',
                                     style: TextStyle(
-                                      color: Color(0xFF075BD8),
-                                      fontSize: 9.5,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-
-                            // =================================================
-                            // MENSAJE DE ERROR / INFORMACIÓN
-                            // =================================================
-
-                            if (_message != null) ...[
-                              const SizedBox(height: 8),
-
-                              Container(
-                                padding:
-                                    const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFF1F6FF),
-                                  borderRadius:
-                                      BorderRadius.circular(5),
-                                ),
-                                child: Text(
-                                  _message!,
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    color: Color(0xFF34527D),
-                                    fontSize: 9,
-                                  ),
-                                ),
-                              ),
-                            ],
-
-                            const SizedBox(height: 10),
-
-                            // =================================================
-                            // BOTÓN INICIAR SESIÓN
-                            // =================================================
-
-                            SizedBox(
-                              height: 38,
-                              child: ElevatedButton(
-                                onPressed:
-                                    _busy ? null : _submit,
-
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor:
-                                      const Color(0xFF075BD8),
-                                  foregroundColor: Colors.white,
-
-                                  elevation: 0,
-
-                                  shape:
-                                      RoundedRectangleBorder(
-                                    borderRadius:
-                                        BorderRadius.circular(5),
-                                  ),
-                                ),
-
-                                child: _busy
-                                    ? const SizedBox(
-                                        width: 17,
-                                        height: 17,
-                                        child:
-                                            CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: Colors.white,
-                                        ),
-                                      )
-                                    : Text(
-                                        _registerMode
-                                            ? 'Crear cuenta'
-                                            : 'Iniciar sesión',
-                                        style:
-                                            const TextStyle(
-                                          fontSize: 10,
-                                          fontWeight:
-                                              FontWeight.w600,
-                                        ),
-                                      ),
-                              ),
-                            ),
-
-                            const SizedBox(height: 13),
-
-                            // =================================================
-                            // REGISTRO
-                            // =================================================
-
-                            Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  _registerMode
-                                      ? '¿Ya tienes una cuenta? '
-                                      : '¿No tienes cuenta? ',
-                                  style: const TextStyle(
-                                    color: Color(0xFF52617A),
-                                    fontSize: 9,
-                                  ),
-                                ),
-
-                                GestureDetector(
-                                  onTap: _busy
-                                      ? null
-                                      : _toggleRegisterMode,
-                                  child: Text(
-                                    _registerMode
-                                        ? 'Inicia sesión'
-                                        : 'Regístrate',
-                                    style: const TextStyle(
-                                      color: Color(0xFF075BD8),
-                                      fontSize: 9,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+                                        color: kMediBlue,
+                                        fontSize: 12.8,
+                                        fontWeight: FontWeight.bold))),
+                          ]),
+                    ],
                   ),
                 ),
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 
-  // ============================================================
-  // NUBES DECORATIVAS
-  // ============================================================
-
-  Widget _cloud({
-    required double width,
-    required double height,
-  }) {
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        color: const Color(0xFFE2EEFF),
-        borderRadius: BorderRadius.circular(60),
+  Widget _field(String label, TextEditingController controller, IconData icon,
+      {bool obscure = false,
+      Widget? suffix,
+      TextInputType? keyboardType,
+      String? Function(String?)? validator}) {
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text(label,
+          style: const TextStyle(
+              color: kMediText, fontSize: 12.8, fontWeight: FontWeight.w600)),
+      const SizedBox(height: 5.2),
+      TextFormField(
+        controller: controller,
+        obscureText: obscure,
+        keyboardType: keyboardType,
+        validator: validator,
+        style: const TextStyle(fontSize: 14.4),
+        decoration: InputDecoration(
+          prefixIcon: Icon(icon, size: 21.6, color: kMediMuted),
+          suffixIcon: suffix,
+          hintText: label == 'Correo electrónico'
+              ? 'ejemplo@correo.com'
+              : '••••••••••',
+          hintStyle: const TextStyle(fontSize: 12.8, color: Color(0xFF9AA6B7)),
+          isDense: true,
+          filled: true,
+          fillColor: Colors.white,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 10, vertical: 11),
+          border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(6),
+              borderSide: const BorderSide(color: Color(0xFFDDE3EC))),
+          enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(6),
+              borderSide: const BorderSide(color: Color(0xFFDDE3EC))),
+        ),
       ),
-    );
+    ]);
   }
+}
+
+class _Logo extends StatelessWidget {
+  const _Logo();
+  @override
+  Widget build(BuildContext context) => Container(
+        width: 86,
+        height: 86,
+        decoration:
+            const BoxDecoration(shape: BoxShape.circle, color: kMediBlue),
+        child:
+            const Center(child: Icon(Icons.add, color: Colors.white, size: 52)),
+      );
 }

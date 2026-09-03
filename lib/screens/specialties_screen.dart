@@ -1,312 +1,117 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../models/medireserva_models.dart';
+import '../services/medireserva_service.dart';
+import '../widgets/medireserva_ui.dart';
 import 'doctors_screen.dart';
 
-class SpecialtiesScreen extends StatelessWidget {
+class SpecialtiesScreen extends StatefulWidget {
   const SpecialtiesScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final specialties = [
-      _Specialty(
-        name: 'Medicina General',
-        icon: Icons.medical_services_outlined,
-      ),
-      _Specialty(
-        name: 'Pediatría',
-        icon: Icons.child_care_outlined,
-      ),
-      _Specialty(
-        name: 'Cardiología',
-        icon: Icons.favorite,
-      ),
-      _Specialty(
-        name: 'Dermatología',
-        icon: Icons.accessibility_new_outlined,
-      ),
-      _Specialty(
-        name: 'Ginecología',
-        icon: Icons.health_and_safety_outlined,
-      ),
-      _Specialty(
-        name: 'Odontología',
-        icon: Icons.health_and_safety_outlined,
-      ),
-      _Specialty(
-        name: 'Oftalmología',
-        icon: Icons.visibility_outlined,
-      ),
-    ];
-
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F8FC),
-
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 10,
-              vertical: 8,
-            ),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                maxWidth: 360,
-              ),
-              child: Container(
-                padding: const EdgeInsets.fromLTRB(
-                  16,
-                  8,
-                  16,
-                  10,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(11),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.06),
-                      blurRadius: 12,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-
-                child: Column(
-                  children: [
-
-                    // ==================================================
-                    // ENCABEZADO
-                    // ==================================================
-
-                    SizedBox(
-                      height: 38,
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-
-                          // Botón regresar
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: IconButton(
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                              icon: const Icon(
-                                Icons.arrow_back_ios_new,
-                                size: 18,
-                                color: Color(0xFF172A4D),
-                              ),
-                            ),
-                          ),
-
-                          // Título
-                          const Column(
-                            mainAxisAlignment:
-                                MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                'Especialidades',
-                                style: TextStyle(
-                                  color: Color(0xFF122B6B),
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              SizedBox(height: 1),
-                              Text(
-                                'Paso 2 de 6',
-                                style: TextStyle(
-                                  color: Color(0xFF075BD8),
-                                  fontSize: 8,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 3),
-
-                    // ==================================================
-                    // LISTA DE ESPECIALIDADES
-                    // ==================================================
-
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: const Color(0xFFE1E7F0),
-                        ),
-                        borderRadius: BorderRadius.circular(7),
-                      ),
-                      child: Column(
-                        children: List.generate(
-                          specialties.length,
-                          (index) {
-                            final specialty =
-                                specialties[index];
-
-                            return _SpecialtyItem(
-                              specialty: specialty,
-                              showDivider:
-                                  index != specialties.length - 1,
-                              onTap: () {
-                                _selectSpecialty(
-                                  context,
-                                  specialty.name,
-                                );
-                              },
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ================================================================
-  // SELECCIONAR ESPECIALIDAD
-  // ================================================================
-
-  void _selectSpecialty(
-  BuildContext context,
-  String specialty,
-) {
-
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (_) => DoctorsScreen(
-        specialty: specialty,
-      ),
-    ),
-  );
-
-
-    // Posteriormente aquí conectaremos:
-    //
-    // Especialidad
-    //      ↓
-    // Seleccionar Médico
-    //
-    // Navigator.push(...)
-  }
+  State<SpecialtiesScreen> createState() => _SpecialtiesScreenState();
 }
 
-// ==================================================================
-// MODELO DE ESPECIALIDAD
-// ==================================================================
+class _SpecialtiesScreenState extends State<SpecialtiesScreen> {
+  late Future<List<Specialty>> _future;
 
-class _Specialty {
-  const _Specialty({
-    required this.name,
-    required this.icon,
-  });
+  @override
+  void initState() {
+    super.initState();
+    _future = MediReservaService(Supabase.instance.client).getSpecialties();
+  }
 
-  final String name;
-  final IconData icon;
-}
-
-// ==================================================================
-// ITEM DE ESPECIALIDAD
-// ==================================================================
-
-class _SpecialtyItem extends StatelessWidget {
-  const _SpecialtyItem({
-    required this.specialty,
-    required this.showDivider,
-    required this.onTap,
-  });
-
-  final _Specialty specialty;
-  final bool showDivider;
-  final VoidCallback onTap;
+  void _reload() => setState(() {
+        _future = MediReservaService(Supabase.instance.client).getSpecialties();
+      });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-
-        InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(6),
-
-          child: SizedBox(
-            height: 33,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 9,
-              ),
-              child: Row(
-                children: [
-
-                  // --------------------------------------------------
-                  // ICONO
-                  // --------------------------------------------------
-
-                  SizedBox(
-                    width: 25,
-                    child: Icon(
-                      specialty.icon,
-                      color: const Color(0xFF075BD8),
-                      size: 17,
-                    ),
-                  ),
-
-                  const SizedBox(width: 5),
-
-                  // --------------------------------------------------
-                  // NOMBRE
-                  // --------------------------------------------------
-
-                  Expanded(
-                    child: Text(
-                      specialty.name,
-                      style: const TextStyle(
-                        color: Color(0xFF16284A),
-                        fontSize: 9.5,
-                        fontWeight: FontWeight.w600,
+    return MediReservaPage(
+      title: 'Especialidades',
+      step: 'Paso 2 de 6',
+      child: FutureBuilder<List<Specialty>>(
+        future: _future,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Padding(
+              padding: EdgeInsets.all(30),
+              child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+            );
+          }
+          if (snapshot.hasError) {
+            return _ErrorState(message: snapshot.error.toString(), onRetry: _reload);
+          }
+          final items = snapshot.data ?? const <Specialty>[];
+          if (items.isEmpty) {
+            return _ErrorState(message: 'No hay especialidades disponibles.', onRetry: _reload);
+          }
+          return Container(
+            decoration: BoxDecoration(
+              border: Border.all(color: const Color(0xFFE0E6EE)),
+              borderRadius: BorderRadius.circular(7),
+            ),
+            child: Column(
+              children: List.generate(items.length, (i) {
+                final item = items[i];
+                return Column(
+                  children: [
+                    SizedBox(
+                      height: 33,
+                      child: InkWell(
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => DoctorsScreen(specialty: item),
+                          ),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 9),
+                          child: Row(
+                            children: [
+                              Icon(_icon(item.iconName), color: kMediBlue, size:21.6),
+                              const SizedBox(width:11.7),
+                              Expanded(child: Text(item.name, style: const TextStyle(color: kMediText, fontSize:15.2, fontWeight: FontWeight.w600))),
+                              const Icon(Icons.chevron_right, size:23, color: kMediMuted),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-
-                  // --------------------------------------------------
-                  // FLECHA
-                  // --------------------------------------------------
-
-                  const Icon(
-                    Icons.chevron_right,
-                    color: Color(0xFF65748A),
-                    size: 17,
-                  ),
-                ],
-              ),
+                    if (i < items.length - 1)
+                      const Divider(height: 1, indent: 8, endIndent: 8, color: Color(0xFFE9EDF3)),
+                  ],
+                );
+              }),
             ),
-          ),
-        ),
-
-        // ------------------------------------------------------------
-        // SEPARADOR
-        // ------------------------------------------------------------
-
-        if (showDivider)
-          const Divider(
-            height: 1,
-            thickness: 0.7,
-            indent: 9,
-            endIndent: 9,
-            color: Color(0xFFE8EDF4),
-          ),
-      ],
+          );
+        },
+      ),
     );
   }
+
+  IconData _icon(String? name) => switch (name) {
+        'child_care' => Icons.child_care_outlined,
+        'favorite' => Icons.favorite,
+        'face' => Icons.face_outlined,
+        'pregnant_woman' => Icons.pregnant_woman_outlined,
+        'dentistry' => Icons.health_and_safety_outlined,
+        'visibility' => Icons.visibility_outlined,
+        _ => Icons.medical_services_outlined,
+      };
+}
+
+class _ErrorState extends StatelessWidget {
+  const _ErrorState({required this.message, required this.onRetry});
+  final String message;
+  final VoidCallback onRetry;
+  @override
+  Widget build(BuildContext context) => Column(children: [
+        const Icon(Icons.cloud_off_outlined, color: kMediMuted, size:40.5),
+        const SizedBox(height:10.4),
+        Text(message, textAlign: TextAlign.center, style: const TextStyle(fontSize:12.8, color: kMediMuted)),
+        const SizedBox(height:10.4),
+        TextButton(onPressed: onRetry, child: const Text('Reintentar', style: TextStyle(fontSize:12.8))),
+      ]);
 }

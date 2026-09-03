@@ -1,69 +1,80 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:provider/single_child_widget.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'app.dart';
-import 'config/app_config.dart';
-import 'controllers/context_controller.dart';
-import 'controllers/preferences_controller.dart';
-import 'repositories/registro_repository.dart';
-import 'repositories/supabase_registro_repository.dart';
-import 'services/location_service.dart';
-import 'services/preferences_service.dart';
-import 'services/weather_service.dart';
+import 'auth/auth_gate.dart';
+import 'widgets/medireserva_ui.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final config = AppConfig.fromEnvironment();
-  final prefs = await SharedPreferences.getInstance();
+  const url = String.fromEnvironment('SUPABASE_URL');
+  const publishableKey = String.fromEnvironment('SUPABASE_PUBLISHABLE_KEY');
+  const anonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
+  // Soporta el nombre nuevo (publishable) y el antiguo (anon) según la config.
+  final key = publishableKey.isNotEmpty ? publishableKey : anonKey;
 
-  final preferencesController = PreferencesController(
-    PreferencesService(prefs),
-  );
+  if (url.isEmpty || key.isEmpty) {
+    runApp(const _MissingConfigApp());
+    return;
+  }
 
-  final providers = <SingleChildWidget>[
-    Provider<AppConfig>.value(value: config),
-    ChangeNotifierProvider<PreferencesController>.value(
-      value: preferencesController,
-    ),
-  ];
+  await Supabase.initialize(url: url, publishableKey: key);
+  runApp(const MediReservaApp());
+}
 
-  // Modo final: siempre Supabase cuando esta configurado.
-  if (config.hasSupabaseConfig) {
-    await Supabase.initialize(
-      url: config.supabaseUrl,
-      publishableKey: config.supabasePublishableKey,
-    );
+class MediReservaApp extends StatelessWidget {
+  const MediReservaApp({super.key});
+  @override
+  Widget build(BuildContext context) => MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'MediReserva',
+        theme: ThemeData(
+            useMaterial3: true,
+            colorScheme: ColorScheme.fromSeed(seedColor: kMediBlue),
+            scaffoldBackgroundColor: kMediBg,
+            fontFamily: 'Arial'),
+        home: const AuthGate(),
+      );
+}
 
-    providers.add(
-      Provider<RegistroRepository>.value(
-        value: SupabaseRegistroRepository(Supabase.instance.client),
-      ),
-    );
-    providers.add(
-      Provider<LocationService>(
-        create: (providerContext) => const LocationService(),
-      ),
-    );
-    providers.add(
-      Provider<WeatherService>(
-        create: (providerContext) => const WeatherService(),
-      ),
-    );
-    providers.add(
-      ChangeNotifierProvider<ContextController>(
-        create: (providerContext) {
-          return ContextController(
-            locationService: providerContext.read<LocationService>(),
-            weatherService: providerContext.read<WeatherService>(),
-          );
-        },
+class _MissingConfigApp extends StatelessWidget {
+  const _MissingConfigApp();
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: Scaffold(
+        backgroundColor: kMediBg,
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(28),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.settings_outlined, color: kMediBlue, size:64.8),
+                const SizedBox(height:18.2),
+                const Text(
+                  'MediReserva necesita configuración',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: kMediDark,
+                    fontSize:28.8,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height:13),
+                const Text(
+                  'Ejecuta la aplicación proporcionando SUPABASE_URL y SUPABASE_ANON_KEY mediante --dart-define. Consulta README_INTEGRACION.md.',
+                  textAlign: TextAlign.center,
+                  style:
+                      TextStyle(color: kMediMuted, fontSize:19.2, height: 1.5),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
-
-  runApp(MultiProvider(providers: providers, child: const ProyectoFinalApp()));
 }

@@ -1,0 +1,8 @@
+Para conectar los nuevos IDs en el flujo de reserva:
+1. SpecialtiesScreen debe conservar specialty.id al navegar.
+2. DoctorsScreen debe conservar doctor.id.
+3. Calendar/Schedule deben conservar specialtyId y doctorId.
+4. ConfirmationScreen recibe ambos IDs y crea la cita en Supabase.
+5. ReservationDetailScreen puede mostrar reservationNumber.
+
+La versión base de las pantallas sigue incluida en lib/screens.
