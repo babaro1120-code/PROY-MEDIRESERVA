@@ -12,6 +12,11 @@ Configura:
 - Project URL
 - Publishable Key
 
+Si al reservar una cita aparece el error 23503
+("Key is not present in table profiles"), ejecuta
+`supabase/04_REPARAR_PERFILES.sql`: recrea el trigger de perfiles,
+autorrepara el perfil del usuario y arregla las cuentas antiguas.
+
 Nunca:
 - service_role
 - secret key

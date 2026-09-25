@@ -130,6 +130,13 @@ to authenticated
 using (id = auth.uid())
 with check (id = auth.uid());
 
+-- Permite que la app cree su propio perfil si el trigger no lo hizo.
+drop policy if exists "profiles_insert_own" on public.profiles;
+create policy "profiles_insert_own"
+on public.profiles for insert
+to authenticated
+with check (id = auth.uid());
+
 drop policy if exists "specialties_read_authenticated" on public.specialties;
 create policy "specialties_read_authenticated"
 on public.specialties for select

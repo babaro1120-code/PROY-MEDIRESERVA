@@ -66,7 +66,7 @@ class _ConfirmationScreenState extends State<ConfirmationScreen> {
     } catch (error) {
       if (!mounted) return;
       setState(() {
-        _error = error.toString().replaceFirst('Exception: ', '');
+        _error = _friendlyError(error);
       });
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -148,6 +148,32 @@ class _ConfirmationScreenState extends State<ConfirmationScreen> {
         ],
       ),
     );
+  }
+
+  /// Traduce los errores de PostgREST a mensajes entendibles para el paciente.
+  String _friendlyError(Object error) {
+    if (error is PostgrestException) {
+      switch (error.code) {
+        case '23503':
+          // Clave foránea: falta la fila del perfil del paciente.
+          return 'Tu perfil todavía no existe en la base de datos '
+              '(tabla "profiles"), por eso no se puede guardar la cita.\n\n'
+              'Abre Supabase → SQL Editor, ejecuta el archivo '
+              'supabase/04_REPARAR_PERFILES.sql y vuelve a intentar.';
+        case '23505':
+          // Índice único activo del horario.
+          return 'Ese horario acaba de ser reservado por otro paciente.\n'
+              'Vuelve atrás y elige otro horario.';
+        case '42501':
+          return 'La base de datos no permite guardar la cita todavía.\n\n'
+              'Abre Supabase → SQL Editor, ejecuta el archivo '
+              'supabase/04_REPARAR_PERFILES.sql (crea permisos y políticas '
+              'de "profiles") y vuelve a intentar.';
+      }
+      return error.message;
+    }
+
+    return error.toString().replaceFirst('Exception: ', '');
   }
 
   String _month(int month) => const [

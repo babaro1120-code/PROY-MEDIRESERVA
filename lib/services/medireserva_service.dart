@@ -15,6 +15,38 @@ class MediReservaService {
     return id;
   }
 
+  /// Garantiza que exista la fila del perfil del usuario autenticado.
+  ///
+  /// `appointments.patient_id` referencia `public.profiles(id)`. Si el trigger
+  /// `handle_new_user` no alcanzó a crear el perfil (cuentas registradas antes
+  /// de ejecutar `supabase/schema.sql`), la reserva fallaría con el error 23503
+  /// ("Key is not present in table profiles"). Este método autorrepara ese caso
+  /// usando los datos del usuario de Auth.
+  Future<void> ensureProfile() async {
+    final id = _userId;
+
+    final existing = await client
+        .from('profiles')
+        .select('id')
+        .eq('id', id)
+        .maybeSingle();
+
+    if (existing != null) return;
+
+    final user = client.auth.currentUser;
+    final metadata = user?.userMetadata ?? const <String, dynamic>{};
+    final phone = (metadata['phone'] as String?)?.trim();
+    final birthDate = (metadata['birth_date'] as String?)?.trim();
+
+    await client.from('profiles').upsert({
+      'id': id,
+      'full_name': (metadata['full_name'] as String? ?? '').trim(),
+      'email': user?.email ?? '',
+      'phone': (phone == null || phone.isEmpty) ? null : phone,
+      'birth_date': (birthDate == null || birthDate.isEmpty) ? null : birthDate,
+    });
+  }
+
   Future<List<Specialty>> getSpecialties() async {
     final rows = await client
         .from('specialties')
@@ -79,6 +111,16 @@ class MediReservaService {
     required DateTime date,
     required String time,
   }) async {
+    // Autorrepara el perfil: sin fila en `profiles` la FK fallaría con 23503.
+    // Si la base de datos no permite crear el perfil (RLS sin politica de
+    // insert), se continúa y el error definitivo lo reporta el insert de la
+    // cita, que es el realmente accionable para el usuario.
+    try {
+      await ensureProfile();
+    } on PostgrestException {
+      // Se ignora a proposito.
+    }
+
     final response = await client
         .from('appointments')
         .insert({
@@ -123,6 +165,8 @@ class MediReservaService {
   }
 
   Future<Map<String, dynamic>> getMyProfile() async {
+    await ensureProfile();
+
     return await client
         .from('profiles')
         .select('full_name,email,phone,birth_date,address')
@@ -136,6 +180,8 @@ class MediReservaService {
     required String birthDate,
     required String address,
   }) async {
+    await ensureProfile();
+
     await client.from('profiles').update({
       'full_name': fullName.trim(),
       'phone': phone.trim(),

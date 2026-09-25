@@ -96,3 +96,27 @@ Después de ejecutar el SQL y arrancar la app:
 ## 8. Nota sobre recuperación
 
 Para probar recuperación desde un teléfono/emulador real, el deep link debe estar registrado en Android/iOS. En web puede usarse una URL HTTPS de la aplicación en lugar del esquema móvil.
+
+## 9. Solución de problemas
+
+### Error 23503 al confirmar una cita
+
+```
+PostgrestException(message: insert or update on table "appointments" violates
+foreign key constraint "appointments_patient_id_fkey", code: 23503,
+details: Key is not present in table "profiles".)
+```
+
+Ocurre cuando la cuenta existe en `auth.users` pero **no tiene fila en `public.profiles`**
+(pasa con cuentas registradas antes de ejecutar `supabase/schema.sql`, o si el trigger
+`on_auth_user_created` no estaba creado). Como `appointments.patient_id` es clave foránea a
+`profiles(id)`, el insert se rechaza.
+
+Solución:
+
+1. Ejecuta `supabase/04_REPARAR_PERFILES.sql` en el SQL Editor de Supabase.
+   Recrea el trigger, habilita la autorreparación desde la app y rellena los perfiles
+   faltantes. La última consulta del script debe devolver **0 filas**.
+2. Reintenta la reserva. La app además llama a `MediReservaService.ensureProfile()` antes
+   de crear la cita, por lo que el perfil se crea solo si faltara (requiere la política
+   `profiles_insert_own` incluida en `schema.sql` y en el script de reparación).

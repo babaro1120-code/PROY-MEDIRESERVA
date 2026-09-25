@@ -1,12 +1,6 @@
-<<<<<<< HEAD
-name: MediReserva
+name: medireserva
 publish_to: 'none'
 description: Sistema de reservas de consultas médicas MediReserva.
-=======
-name: MEDIRESERVA
-description: "Proyecto MEDIRESERVA - base adaptada del proyecto acumulativo (asincronia, API REST, GPS, mapa y Supabase)."
-publish_to: "none"
->>>>>>> 4362380f8704cf00ac6ea9c679a355f156b675c8
 version: 1.0.0+1
 
 environment:

@@ -1,0 +1,9 @@
+﻿00:00 +0: loading C:/Users/US4R/Desktop/Proyecto MEDIRESERVA/test/medireserva_models_test.dart
+00:00 +0: C:/Users/US4R/Desktop/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: Specialty.fromMap convierte el id num├®rico y conserva el nombre
+00:00 +1: C:/Users/US4R/Desktop/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: Specialty.fromMap usa valores por defecto cuando faltan datos
+00:00 +2: C:/Users/US4R/Desktop/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: Doctor.fromMap lee el nombre de la especialidad anidada
+00:00 +3: C:/Users/US4R/Desktop/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: Doctor.fromMap tolera datos ausentes
+00:00 +4: C:/Users/US4R/Desktop/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: Appointment.fromMap combina fecha, hora y relaciones
+00:00 +5: C:/Users/US4R/Desktop/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: Appointment.fromMap usa "pending" cuando no llega el estado
+00:01 +6: C:/Users/US4R/Desktop/Proyecto MEDIRESERVA/test/widget_test.dart: muestra el aviso de configuraci├│n cuando faltan SUPABASE_URL y la clave
+00:02 +7: All tests passed!
