@@ -206,9 +206,19 @@ flutter analyze
 flutter test
 ```
 
-Las pruebas automatizadas cubren la conversión de los modelos de datos
-(`test/medireserva_models_test.dart`) y el aviso de configuración faltante
-(`test/widget_test.dart`).
+| Nivel | Evidencia | Resultado |
+|---|---|---|
+| Análisis estático | `flutter analyze` | Sin observaciones |
+| Modelos y contrato de la API | `test/medireserva_models_test.dart` | 11 de 11 |
+| Interfaz | `test/widget_test.dart` | 1 de 1 |
+| Base de datos y reglas de negocio | `docs/PRUEBAS_SQL.md` | 18 de 18 |
+
+Las pruebas de la base de datos verifican, entre otras cosas, que el
+autorregistro no pueda asignarse un rol privilegiado, que un segundo intento
+sobre el mismo horario sea rechazado, que cancelar libere el bloque y permita
+volver a reservarlo, y que las políticas RLS aíslen los datos entre pacientes.
+Los resultados crudos de `analyze`, `test` y la compilación web están en
+`docs/VERIFICACION_ANALYZE_TEST.txt`.
 
 ## 13. Autor
 
