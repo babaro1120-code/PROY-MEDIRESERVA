@@ -12,3 +12,6 @@ android/key.properties
 .idea/
 .vscode/
 *.iml
+
+.vercel
+.env*

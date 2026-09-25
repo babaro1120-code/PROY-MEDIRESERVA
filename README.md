@@ -146,9 +146,12 @@ El resultado queda en `build/web` y se publica con:
 npx vercel deploy --prod
 ```
 
-- **Dirección pública:** _por confirmar tras el despliegue_
+- **Dirección pública:** <https://medireserva.vercel.app>
 - **Plataforma:** Vercel (sitio estático, `outputDirectory: build/web`)
 - **Base de datos:** Supabase
+
+> El despliegue se realiza desde el CLI sobre el artefacto ya compilado, porque el
+> entorno de compilación de Vercel no incluye el SDK de Flutter.
 
 > Tras publicar, la dirección debe registrarse en Supabase →
 > **Authentication → URL Configuration** (Site URL y Redirect URLs) para que el
