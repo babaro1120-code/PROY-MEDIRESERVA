@@ -1,4 +1,4 @@
-# Tablero de tareas MediReserva --- GitHub Projects (Kanban)
+# Tablero de tareas MediReserva - (Kanban)
 
 **Proyecto:** MediReserva\
 **Tipo:** Aplicación web y móvil para reservas médicas\
