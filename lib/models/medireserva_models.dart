@@ -85,3 +85,50 @@ class Appointment {
     );
   }
 }
+
+/// Una reserva vista por quien la atiende: el profesional o el administrador.
+///
+/// Se diferencia de [Appointment] en que incluye el nombre del paciente, dato
+/// que solo resulta visible para esos dos roles (lo garantizan las políticas
+/// de seguridad a nivel de fila, no la aplicación).
+class AgendaItem {
+  const AgendaItem({
+    required this.id,
+    required this.patientName,
+    required this.specialty,
+    required this.doctor,
+    required this.date,
+    required this.time,
+    required this.status,
+    this.reservationNumber,
+  });
+
+  final String id;
+  final String patientName;
+  final String specialty;
+  final String doctor;
+  final DateTime date;
+  final String time;
+  final String status;
+  final String? reservationNumber;
+
+  factory AgendaItem.fromMap(Map<String, dynamic> map) {
+    final paciente = map['profiles'];
+    final especialidad = map['specialties'];
+    final medico = map['doctors'];
+
+    return AgendaItem(
+      id: map['id'].toString(),
+      patientName:
+          paciente is Map ? paciente['full_name'] as String? ?? '' : '',
+      specialty: especialidad is Map
+          ? especialidad['name'] as String? ?? ''
+          : '',
+      doctor: medico is Map ? medico['name'] as String? ?? '' : '',
+      date: DateTime.parse(map['appointment_date'].toString()),
+      time: map['appointment_time'].toString(),
+      status: map['status'] as String? ?? 'pending',
+      reservationNumber: map['reservation_number'] as String?,
+    );
+  }
+}

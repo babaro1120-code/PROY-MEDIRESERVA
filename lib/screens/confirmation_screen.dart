@@ -151,6 +151,9 @@ class _ConfirmationScreenState extends State<ConfirmationScreen> {
   }
 
   /// Traduce los errores de PostgREST a mensajes entendibles para el paciente.
+  ///
+  /// La función `reservar_cita` de PostgreSQL lanza mensajes ya redactados en
+  /// español, así que para esos códigos se muestra su texto tal cual.
   String _friendlyError(Object error) {
     if (error is PostgrestException) {
       switch (error.code) {
@@ -161,14 +164,35 @@ class _ConfirmationScreenState extends State<ConfirmationScreen> {
               'Abre Supabase → SQL Editor, ejecuta el archivo '
               'supabase/04_REPARAR_PERFILES.sql y vuelve a intentar.';
         case '23505':
-          // Índice único activo del horario.
+          // Índice único activo del horario, o reserva ya cancelada.
           return 'Ese horario acaba de ser reservado por otro paciente.\n'
               'Vuelve atrás y elige otro horario.';
+        case '23514':
+          // Violación de dominio: la cita ya fue atendida.
+          return 'Esa consulta ya figura como atendida y no se puede cancelar.\n\n'
+              'Si necesitas una nueva cita, reserva otro horario.';
+        case '22007':
+          // Fecha inválida: se intentó reservar en el pasado.
+          return 'Esa fecha ya pasó y no se puede reservar.\n'
+              'Vuelve atrás y elige un día de hoy en adelante.';
+        case '22023':
+          // Parámetros inválidos: el médico no corresponde a la especialidad.
+          return 'El profesional elegido no corresponde a esa especialidad.\n'
+              'Vuelve al inicio del flujo y repite la selección.';
+        case 'P0002':
+          // Horario inexistente en la oferta del profesional.
+          return 'Ese horario ya no está en la oferta del profesional.\n'
+              'Vuelve atrás y elige otro horario disponible.';
         case '42501':
-          return 'La base de datos no permite guardar la cita todavía.\n\n'
-              'Abre Supabase → SQL Editor, ejecuta el archivo '
-              'supabase/04_REPARAR_PERFILES.sql (crea permisos y políticas '
+          return 'La sesión no permite guardar la cita.\n\n'
+              'Abre Supabase → SQL Editor, ejecuta supabase/schema.sql y '
+              'supabase/04_REPARAR_PERFILES.sql (crean permisos y políticas '
               'de "profiles") y vuelve a intentar.';
+        case 'PGRST202':
+          // Falta ejecutar la migración de la función de reserva.
+          return 'La base de datos todavía no tiene la función de reserva.\n\n'
+              'Abre Supabase → SQL Editor, ejecuta '
+              'supabase/07_RESERVAS_RPC.sql y vuelve a intentar.';
       }
       return error.message;
     }

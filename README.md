@@ -1,144 +1,218 @@
-#  MEDIRESERVA — (SISTEMA WEB Y MÓVIL PARA LA GESTIÓN DE RESERVAS DE CONSULTAS MÉDICAS)
+# MEDIRESERVA
 
-## 1. Nombre y descripción del proyecto
+**Sistema web y móvil para la gestión de reservas de consultas médicas**
 
-MEDIRESERVA es una aplicación móvil moderna desarrollada en Flutter que facilita la gestión y reserva de citas médicas
-de forma rápida, eficiente e intuitiva. Permite a los usuarios consultar la disponibilidad de profesionales de la salud, programar consultas y gestionar sus reservas en tiempo real.
+Proyecto final del Diplomado en Desarrollo Web y Aplicaciones Móviles · UAJMS 2026
+Autor: Alvaro Vladimir Olivera Solano · Grupo 3
 
+---
 
-## 2. 🎯 Problema u objetivo
+## 1. Descripción
 
-El objetivo principal de MEDIRESERVA es optimizar el proceso de reserva de citas en centros médicos, reduciendo los tiempos de espera y eliminando
-las barreras de atención presencial o telefónica. La aplicación busca centralizar la información médica de turnos para ofrecer una experiencia accesible, 
-ágil y transparente tanto para pacientes como para el personal médico.
+MediReserva es una aplicación desarrollada en Flutter que permite a los pacientes
+consultar la disponibilidad de profesionales de la salud, reservar un turno y
+gestionar sus citas. El sistema se apoya en Supabase como plataforma de backend:
+autenticación, base de datos PostgreSQL y autorización mediante políticas de
+seguridad a nivel de fila (RLS).
 
+Se ejecuta en Android y en navegador web desde un único código fuente.
 
-## 3.🚀 Funcionalidades implementadas
+## 2. Problema y objetivo
 
+La reserva de consultas se realiza hoy por teléfono o de forma presencial, sin un
+registro único que impida asignar el mismo horario a dos pacientes. MediReserva
+centraliza la oferta de horarios y garantiza que un bloque solo pueda reservarse
+una vez.
 
-* **Autenticación e Identificación:** Registro e inicio de sesión de usuarios.
-* **Catálogo de Especialidades y Médicos:** Búsqueda y filtrado de profesionales de la salud.
-* **Gestión de Citas Médicas:** 
-  * Selección de fechas y horarios disponibles.
-  * Confirmación y reserva de turnos.
-  * Historial de citas médicas (pasadas y pendientes).
-  * Cancelación o reprogramación de citas.
-* **Perfiles de Usuario:** Gestión de datos personales y preferencias de atención.
-* **Integración Web / Dispositivos:** Soporte para ejecución multiplataforma (Android y Web).
+**Objetivo general:** desarrollar un sistema web y móvil que permita a los
+pacientes reservar consultas médicas sobre la disponibilidad real de los
+profesionales, evitando la doble asignación de un mismo horario.
 
-## 4. 🛠️ Tecnologías utilizadas
+## 3. Funcionalidades implementadas
 
-* **Lenguaje de Programación:** [Dart](https://dart.dev/)
-* **Framework Principal:** [Flutter](https://flutter.dev/) (v3.x)
-* **Entorno de Ejecución / Soporte:** Android SDK, Chrome / Web Drivers
-* **Gestión de Estado y Dependencias:** Paquetes Dart/Flutter estándar (`pubspec.yaml`)
-* **Herramientas de Construcción:** Gradle (Android), Dart Tooling
+- **Autenticación:** registro, inicio y cierre de sesión, recuperación de
+  contraseña por correo y cambio de contraseña, con Supabase Auth.
+- **Catálogo:** especialidades y profesionales, leídos desde la base de datos.
+- **Flujo de reserva en seis pasos:** especialidad → profesional → fecha →
+  horario → confirmación → comprobante con número de reserva.
+- **Gestión de citas:** agenda propia del paciente, separada en próximas e
+  históricas, y cancelación con liberación del bloque horario.
+- **Perfil:** consulta y actualización de los datos personales.
+- **Notificaciones:** avisos generados por el servidor al registrar, confirmar,
+  atender o cancelar una reserva.
+- **Estados de interfaz:** cada pantalla que consulta datos resuelve carga,
+  vacío, error y datos, y muestra el mensaje de error de la API.
+- **Roles:** paciente, profesional y administrador, con autorización aplicada en
+  el servidor mediante RLS.
 
+## 4. Tecnologías utilizadas
 
-**Versiones principales (`pubspec.yaml`):** `provider 6.1.5+1`, `shared_preferences 2.5.5`, `supabase_flutter 2.17.2`, `http 1.6.0`, `geolocator 14.0.3`, `flutter_map 8.3.2`, `latlong2 0.10.1`.
+Versiones tomadas de `pubspec.lock`, del SDK instalado y del entorno de ejecución.
+
+| Componente | Versión | Función en el sistema |
+|---|---|---|
+| Flutter | 3.44.8 | Framework multiplataforma (Android y web) |
+| Dart | 3.12.2 | Lenguaje de programación |
+| supabase_flutter | 2.17.2 | Cliente oficial de Supabase para Flutter |
+| supabase (Dart) | 2.16.1 | Núcleo del cliente: Auth, Realtime, Storage |
+| postgrest | 2.9.1 | Cliente de la API REST generada por PostgreSQL |
+| gotrue | 2.27.2 | Cliente de autenticación (GoTrue) |
+| shared_preferences | 2.5.5 | Persistencia local de la sesión |
+| http | 1.6.0 | Cliente HTTP subyacente |
+| app_links · url_launcher | 7.2.1 · 6.3.2 | Enlaces profundos y apertura de enlaces |
+| Supabase (plataforma) | PostgreSQL gestionado | Base de datos, Auth, RLS y API REST |
+| Vercel | — | Alojamiento del frontend web |
+| Git | 2.40+ | Control de versiones |
+
+> Las dependencias se declaran en `pubspec.yaml` y se fijan en `pubspec.lock`.
+> Regla del aula: `flutter pub get` **sí**, `flutter pub upgrade` **no**.
 
 ## 5. Requisitos para ejecutar el proyecto
 
-- Flutter SDK **>= 3.35.0** y Dart **>= 3.9.0**.
-- Editor (VS Code con extensión Flutter, o Android Studio).
-- Un proyecto **Supabase** con las tablas y políticas aplicadas (SQL en `supabase/`).
+- Flutter SDK **>= 3.44.0** y Dart **>= 3.12.0**.
+- Editor con extensión de Flutter (VS Code o Android Studio).
+- Un proyecto de Supabase con el esquema aplicado (ver apartado 6).
 - Archivo `config/local.json` con `SUPABASE_URL` y `SUPABASE_PUBLISHABLE_KEY`.
-- Dispositivo **Android** (o Chrome para probar).
+- Para Android: un dispositivo o emulador. Para web: Chrome.
 
-> ⚠️ Regla de estabilidad del aula: `flutter pub get` **SÍ** — `flutter pub upgrade` **NO** (podría romper dependencias).
+## 6. Instalación y ejecución
 
-## 6. Instrucciones de instalación y ejecución
+### 6.1 Base de datos
 
-### Windows
+En **Supabase → SQL Editor**, ejecutar en este orden:
 
-1. Extrae el proyecto en una ruta corta, por ejemplo: `C:\flutter_aula\PROYECTO_FINAL_360_SESION2_FINAL`
-2. Ejecuta `scripts\00_PREPARAR_WINDOWS.bat`
-3. Luego `scripts\01_MENU_WINDOWS.bat`
-4. Elige Android o Chrome.
+| Orden | Archivo | Contenido |
+|---|---|---|
+| 1 | `supabase/schema.sql` | Tablas, RLS, disparador de perfil y datos iniciales |
+| 2 | `supabase/04_REPARAR_PERFILES.sql` | Reparación de perfiles faltantes (error 23503) |
+| 3 | `supabase/05_ROLES_Y_RLS.sql` | Roles, funciones de autorización y políticas por rol |
+| 4 | `supabase/06_NOTIFICACIONES.sql` | Notificaciones automáticas |
+| 5 | `supabase/07_RESERVAS_RPC.sql` | CRUD de reservas y reserva atómica |
+| 6 | `supabase/08_ELIMINAR_MODULO_DEMO.sql` | Elimina la tabla de demostración del aula |
 
-> Windows Desktop **no** es requisito para esta clase.
+Todos los scripts son idempotentes: pueden ejecutarse más de una vez sin
+duplicar datos. Cada uno termina con consultas de verificación.
 
-### Linux (MX)
+### 6.2 Configuración
 
-1. Extrae el proyecto dentro de tu HOME.
-2. `chmod +x scripts/*.sh`
-3. `./scripts/00_PREPARAR_LINUX.sh`
-4. `./scripts/01_MENU_LINUX.sh`
-5. Si aparece error de Ninja: `./scripts/98_REPARAR_NINJA_LINUX.sh`
+```powershell
+Copy-Item config/local.example.json config/local.json
+# Editar config/local.json con la URL del proyecto y la clave publicable.
+```
 
-### Configuración de Supabase (único modo)
+`config/local.json` está en `.gitignore`: nunca se versiona.
 
-Este proyecto usa **solo** la parte final (Supabase). No hay modo DEMO.
+### 6.3 Ejecución
 
-1. Ejecuta el SQL de `supabase/` en tu proyecto Supabase.
-2. Crea `config/local.json` a partir de `config/local.example.json` (Project URL + Publishable Key).
-3. Ejecuta la app:
-   ```powershell
-   flutter run --dart-define-from-file=config/local.json
-   ```
+```powershell
+flutter pub get
+flutter run --dart-define-from-file=config/local.json
+```
 
-> ⚠️ Nunca pongas `service_role` ni secret keys dentro de Flutter.
+Para elegir el destino: `flutter run -d chrome` o `flutter run -d <id-dispositivo>`.
 
-## 7. Estructura general del proyecto
+## 7. Estructura del proyecto
 
 ```
 Proyecto MEDIRESERVA/
-├── android/              # Configuración y código nativo para Android
-├── ios/                  # Configuración nativa para iOS
-├── lib/                  # Código fuente principal de la aplicación (Dart)
-│   ├── main.dart         # Punto de entrada de la aplicación
-│   ├── models/           # Modelos de datos
-│   ├── screens/          # Pantallas e interfaces de usuario
-│   ├── services/         # Servicios de red, APIs e integración
-│   └── widgets/          # Componentes visuales reutilizables
-├── web/                  # Archivos para soporte y compilación Web
-├── pubspec.yaml          # Configuración de dependencias y assets de Flutter
-└── README.md             # Documentación principal del proyecto
-
-## 8. Procedimiento para generar el APK
-
-### APK de depuración (rápido para probar)
-
-```powershell
-flutter build apk --debug
+├── lib/
+│   ├── main.dart                 # Punto de entrada y arranque de Supabase
+│   ├── auth/auth_gate.dart       # Decide la pantalla según la sesión
+│   ├── models/                   # Modelos de datos (especialidad, médico, reserva)
+│   ├── screens/                  # Pantallas de la aplicación
+│   ├── services/                 # auth_service y medireserva_service (acceso a datos)
+│   └── widgets/                  # Componentes visuales reutilizables
+├── supabase/                     # Scripts SQL del esquema y las migraciones
+├── config/                       # local.example.json (plantilla) y local.json (ignorado)
+├── web/                          # Plantilla de la compilación web
+├── android/                      # Configuración nativa de Android
+├── test/                         # Pruebas automatizadas
+├── docs/                         # Documentación de apoyo
+└── vercel.json                   # Configuración de despliegue web
 ```
 
-- Ruta del APK: `build\app\outputs\flutter-apk\app-debug.apk`
+## 8. Despliegue web
 
-### APK de lanzamiento (para distribución)
+El frontend se publica como sitio estático. La compilación inyecta la
+configuración de Supabase en el artefacto:
 
 ```powershell
+flutter build web --release --dart-define-from-file=config/local.json
+```
+
+El resultado queda en `build/web` y se publica con:
+
+```powershell
+npx vercel deploy --prod
+```
+
+- **Dirección pública:** _por confirmar tras el despliegue_
+- **Plataforma:** Vercel (sitio estático, `outputDirectory: build/web`)
+- **Base de datos:** Supabase
+
+> Tras publicar, la dirección debe registrarse en Supabase →
+> **Authentication → URL Configuration** (Site URL y Redirect URLs) para que el
+> inicio de sesión y la recuperación de contraseña funcionen en producción.
+
+## 9. Generación del APK
+
+```powershell
+# Depuración
+flutter build apk --debug
+
+# Distribución
 flutter build apk --release --dart-define-from-file=config/local.json
 ```
 
-- Ruta del APK: `build\app\outputs\flutter-apk\app-release.apk`
+- Ruta: `build\app\outputs\flutter-apk\app-release.apk`
+- Instalación: `flutter install`, o copiar el APK al dispositivo e instalarlo.
 
-### Instalación en un teléfono
+## 10. Seguridad
 
-1. Conecta el celular por USB (con depuración USB activada).
-2. Ejecuta `flutter install`, o copia el archivo `app-release.apk` al teléfono e instálalo manualmente.
+- **Autenticación:** Supabase Auth con JWT; las contraseñas las gestiona el
+  servicio y nunca se almacenan en el cliente.
+- **Autorización en el servidor:** políticas RLS por tabla y funciones
+  `rol_actual()`, `es_administrador()` y `es_mi_agenda()`. Ocultar un control en
+  la interfaz no se considera autorización.
+- **El rol no se regala:** un disparador fuerza que toda cuenta creada por
+  autorregistro nazca con el rol `paciente`. Solo un administrador puede cambiar
+  un rol.
+- **Menor privilegio:** en el cliente solo reside la clave publicable
+  (`sb_publishable_...`). La clave `service_role` no se incluye en el código, ni
+  en el APK, ni en la compilación web.
+- **Baja lógica:** las cancelaciones se registran con estado `cancelled` en lugar
+  de eliminar la fila, para conservar la trazabilidad.
 
-> 📌 Se usa `--dart-define-from-file=config/local.json` para que el APK incluya la configuración de Supabase (URL + Publishable Key). No modifiques `config/local.json` (contiene claves del aula).
+## 11. Limitaciones conocidas
 
-## 9. Versión entregada
+Las siguientes capacidades quedan **fuera del alcance** de esta entrega:
 
-- **Versión:** `1.0.0+1` (definida en `pubspec.yaml`).
-- **Sesión / etapa:** Sesión 2 — Proyecto Final MEDIRESERVA.
-- **Plataforma objetivo:** Android (y web para pruebas).
+- **Pagos en línea:** requieren integración con una pasarela y obligaciones
+  financieras ajenas al objetivo académico.
+- **Telemedicina (videollamadas):** exige infraestructura de servidores en tiempo
+  real.
+- **Historia clínica electrónica:** sujeta a regulación específica sobre datos de
+  salud.
+- **Geolocalización de puntos de atención:** se evaluó y se retiró del alcance
+  para concentrar el esfuerzo en el flujo de reserva.
 
-## 10. Limitaciones conocidas
+Los datos de prueba son ficticios. No se utilizan nombres, teléfonos ni datos de
+salud reales.
 
-Integración de Pagos: La pasarela de pago en línea se encuentra en modo de prueba / simulación.
+## 12. Pruebas
 
-Notificaciones Push: Requieren la configuración previa de credenciales de servicios externos (Firebase Cloud Messaging) en el servidor final.
+```powershell
+flutter analyze
+flutter test
+```
 
-Soporte Offline: Es necesaria una conexión activa a Internet para consultar la disponibilidad de citas en tiempo real.
+Las pruebas automatizadas cubren la conversión de los modelos de datos
+(`test/medireserva_models_test.dart`) y el aviso de configuración faltante
+(`test/widget_test.dart`).
 
-✍️ Autor del Proyecto
+## 13. Autor
 
-## 11. Autor del proyecto
+**Alvaro Vladimir Olivera Solano** · Grupo 3
+Diplomado en Desarrollo Web y Aplicaciones Móviles · UAJMS 2026
 
-Desarrollador / ALVARO VLADIMIR OLIVERA SOLANO
-
-Contacto / Repositorio: Proyecto MEDIRESERVA - GitHub
-"""
+- Repositorio: https://github.com/babaro1120-code/PROY-MEDIRESERVA

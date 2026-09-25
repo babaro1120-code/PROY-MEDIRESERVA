@@ -47,6 +47,27 @@ class MediReservaService {
     });
   }
 
+  /// Rol del usuario autenticado: `paciente`, `profesional` o `administrador`.
+  ///
+  /// El rol no lo elige el usuario: lo asigna un administrador. Ante cualquier
+  /// duda se devuelve `paciente`, que es el menor privilegio.
+  Future<String> getMyRole() async {
+    try {
+      final row = await client
+          .from('profiles')
+          .select('role')
+          .eq('id', _userId)
+          .maybeSingle();
+      final raw = (row?['role'] as String?)?.trim().toLowerCase();
+      if (raw == 'profesional') return 'profesional';
+      if (raw == 'administrador') return 'administrador';
+      return 'paciente';
+    } on PostgrestException {
+      // La columna `role` todavía no existe (falta 05_ROLES_Y_RLS.sql).
+      return 'paciente';
+    }
+  }
+
   Future<List<Specialty>> getSpecialties() async {
     final rows = await client
         .from('specialties')
@@ -88,6 +109,8 @@ class MediReservaService {
         .eq('is_available', true)
         .order('appointment_time');
 
+    // Doble comprobación: además del bloque marcado como no disponible, se
+    // descartan los horarios que ya tienen una reserva activa.
     final booked = await client
         .from('appointments')
         .select('appointment_time')
@@ -105,6 +128,16 @@ class MediReservaService {
         .toList();
   }
 
+  /// Crea la reserva llamando a la función `reservar_cita` de PostgreSQL.
+  ///
+  /// La función hace en una sola transacción: valida el bloque, lo marca como
+  /// ocupado y crea la cita, tomando `patient_id` de `auth.uid()`. Así dos
+  /// intentos simultáneos sobre el mismo horario no pueden ganar los dos.
+  ///
+  /// Si la base todavía no tiene la función (falta ejecutar
+  /// `supabase/07_RESERVAS_RPC.sql`), se recurre a la inserción directa para
+  /// que la aplicación siga operativa: el índice único parcial del esquema
+  /// sigue impidiendo la doble reserva.
   Future<Appointment> createAppointment({
     required String specialtyId,
     required String doctorId,
@@ -112,13 +145,28 @@ class MediReservaService {
     required String time,
   }) async {
     // Autorrepara el perfil: sin fila en `profiles` la FK fallaría con 23503.
-    // Si la base de datos no permite crear el perfil (RLS sin politica de
-    // insert), se continúa y el error definitivo lo reporta el insert de la
-    // cita, que es el realmente accionable para el usuario.
     try {
       await ensureProfile();
     } on PostgrestException {
-      // Se ignora a proposito.
+      // Se ignora a propósito; el error accionable lo reporta la reserva.
+    }
+
+    final params = {
+      'p_doctor_id': doctorId,
+      'p_specialty_id': specialtyId,
+      'p_fecha': _dateOnly(date),
+      'p_hora': time.length == 5 ? '$time:00' : time,
+    };
+
+    try {
+      final response = await client.rpc('reservar_cita', params: params);
+
+      if (response is Map) {
+        return Appointment.fromMap(Map<String, dynamic>.from(response));
+      }
+    } on PostgrestException catch (error) {
+      if (!_funcionRpcAusente(error)) rethrow;
+      // Continúa con la inserción directa.
     }
 
     final response = await client
@@ -128,7 +176,7 @@ class MediReservaService {
           'specialty_id': specialtyId,
           'doctor_id': doctorId,
           'appointment_date': _dateOnly(date),
-          'appointment_time': '$time:00',
+          'appointment_time': time.length == 5 ? '$time:00' : time,
           'status': 'confirmed',
         })
         .select(
@@ -156,12 +204,54 @@ class MediReservaService {
         .toList();
   }
 
+  /// Da de baja la reserva (no se borra la fila: se conserva la trazabilidad).
+  ///
+  /// `cancelar_cita` además libera el bloque de disponibilidad para que otro
+  /// paciente pueda reservarlo.
   Future<void> cancelAppointment(String appointmentId) async {
+    try {
+      await client.rpc('cancelar_cita', params: {'p_cita_id': appointmentId});
+      return;
+    } on PostgrestException catch (error) {
+      if (!_funcionRpcAusente(error)) rethrow;
+    }
+
     await client
         .from('appointments')
         .update({'status': 'cancelled'})
         .eq('id', appointmentId)
         .eq('patient_id', _userId);
+  }
+
+  /// Editar el estado de una reserva: profesional asignado o administrador.
+  Future<void> setAppointmentStatus({
+    required String appointmentId,
+    required String status,
+  }) async {
+    await client.rpc('cambiar_estado_reserva', params: {
+      'p_cita_id': appointmentId,
+      'p_estado': status,
+    });
+  }
+
+  /// Reservas que puede ver el usuario autenticado según su rol.
+  ///
+  /// El acotamiento lo aplica el servidor mediante RLS: el paciente recibe las
+  /// suyas, el profesional únicamente las de su agenda y el administrador,
+  /// todas. Filtrar en el cliente no sería un mecanismo de autorización.
+  Future<List<AgendaItem>> getAgenda() async {
+    final rows = await client
+        .from('appointments')
+        .select(
+          'id,reservation_number,appointment_date,appointment_time,status,'
+          'specialties(name),doctors(name),profiles(full_name)',
+        )
+        .order('appointment_date', ascending: true)
+        .order('appointment_time', ascending: true);
+
+    return (rows as List)
+        .map((row) => AgendaItem.fromMap(Map<String, dynamic>.from(row)))
+        .toList();
   }
 
   Future<Map<String, dynamic>> getMyProfile() async {
@@ -208,6 +298,15 @@ class MediReservaService {
         .update({'is_read': true})
         .eq('id', id)
         .eq('user_id', _userId);
+  }
+
+  /// Detecta si el error es "la función no existe todavía", para no confundirlo
+  /// con un rechazo real de la reserva.
+  bool _funcionRpcAusente(PostgrestException error) {
+    final message = error.message.toLowerCase();
+    return error.code == 'PGRST202' ||
+        message.contains('could not find the function') ||
+        message.contains('schema cache');
   }
 
   String _dateOnly(DateTime value) {
