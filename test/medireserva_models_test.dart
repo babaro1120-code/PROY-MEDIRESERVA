@@ -89,4 +89,76 @@ void main() {
       expect(appointment.reservationNumber, isNull);
     });
   });
+
+  group('AgendaItem.fromMap', () {
+    test('lee el nombre del paciente desde la relación anidada', () {
+      final item = AgendaItem.fromMap({
+        'id': 'a1',
+        'reservation_number': 'MR-20260926-ABCD1234',
+        'appointment_date': '2026-09-26',
+        'appointment_time': '10:30:00',
+        'status': 'confirmed',
+        'specialties': {'name': 'Pediatría'},
+        'doctors': {'name': 'Dra. López'},
+        'profiles': {'full_name': 'Ana Quispe'},
+      });
+
+      expect(item.id, 'a1');
+      expect(item.patientName, 'Ana Quispe');
+      expect(item.specialty, 'Pediatría');
+      expect(item.doctor, 'Dra. López');
+      expect(item.date, DateTime(2026, 9, 26));
+      expect(item.time, '10:30:00');
+      expect(item.status, 'confirmed');
+      expect(item.reservationNumber, 'MR-20260926-ABCD1234');
+    });
+
+    test('tolera que el paciente no llegue en la respuesta', () {
+      final item = AgendaItem.fromMap({
+        'id': 'a2',
+        'appointment_date': '2026-09-27',
+        'appointment_time': '11:00:00',
+      });
+
+      expect(item.patientName, '');
+      expect(item.specialty, '');
+      expect(item.doctor, '');
+      expect(item.status, 'pending');
+      expect(item.reservationNumber, isNull);
+    });
+  });
+
+  group('respuesta de la función reservar_cita', () {
+    // Forma exacta que arma jsonb_build_object en supabase/07_RESERVAS_RPC.sql.
+    final respuestaRpc = <String, dynamic>{
+      'id': '11111111-2222-3333-4444-555555555555',
+      'reservation_number': 'MR-20260926-DEADBEEF',
+      'appointment_date': '2026-09-26',
+      'appointment_time': '15:00:00',
+      'status': 'confirmed',
+      'specialties': {'name': 'Medicina General'},
+      'doctors': {'name': 'Dra. Ana López'},
+    };
+
+    test('se mapea con Appointment sin adaptar nada', () {
+      final appointment = Appointment.fromMap(respuestaRpc);
+
+      expect(appointment.id, '11111111-2222-3333-4444-555555555555');
+      expect(appointment.reservationNumber, 'MR-20260926-DEADBEEF');
+      expect(appointment.specialty, 'Medicina General');
+      expect(appointment.doctor, 'Dra. Ana López');
+      expect(appointment.date, DateTime(2026, 9, 26));
+      expect(appointment.time, '15:00:00');
+      expect(appointment.status, 'confirmed');
+    });
+
+    test('no depende de patient_id: ese dato sale de auth.uid()', () {
+      // El RPC no devuelve patient_id a propósito: el cliente nunca lo envía.
+      expect(respuestaRpc.containsKey('patient_id'), isFalse);
+
+      final appointment = Appointment.fromMap(respuestaRpc);
+      expect(appointment.status, 'confirmed');
+      expect(appointment.specialty, 'Medicina General');
+    });
+  });
 }
