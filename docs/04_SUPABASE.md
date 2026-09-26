@@ -16,6 +16,8 @@ En **Supabase → SQL Editor**, uno por uno:
 5. `07_RESERVAS_RPC.sql` — función `reservar_cita` (reserva atómica),
    `cancelar_cita` y `cambiar_estado_reserva`.
 6. `08_ELIMINAR_MODULO_DEMO.sql` — elimina la tabla `registros_demo` del aula.
+7. `09_SALUD.sql` — función `salud()`: expone `GET /rest/v1/rpc/salud`, la ruta
+   de salud de la API, que responde `{ "estado": "ok" }`.
 
 Todos son idempotentes y terminan con consultas de verificación.
 

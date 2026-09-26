@@ -89,6 +89,7 @@ En **Supabase → SQL Editor**, ejecutar en este orden:
 | 4 | `supabase/06_NOTIFICACIONES.sql` | Notificaciones automáticas |
 | 5 | `supabase/07_RESERVAS_RPC.sql` | CRUD de reservas y reserva atómica |
 | 6 | `supabase/08_ELIMINAR_MODULO_DEMO.sql` | Elimina la tabla de demostración del aula |
+| 7 | `supabase/09_SALUD.sql` | Ruta de salud de la API: `GET /rest/v1/rpc/salud` |
 
 Todos los scripts son idempotentes: pueden ejecutarse más de una vez sin
 duplicar datos. Cada uno termina con consultas de verificación.
@@ -128,6 +129,9 @@ Proyecto MEDIRESERVA/
 ├── android/                      # Configuración nativa de Android
 ├── test/                         # Pruebas automatizadas
 ├── docs/                         # Documentación de apoyo
+│   ├── API.md                    # Inventario de endpoints, roles y errores
+│   ├── PRUEBAS_SQL.md            # Planilla de casos de prueba
+│   └── VERIFICACION_ANALYZE_TEST.txt
 └── vercel.json                   # Configuración de despliegue web
 ```
 
