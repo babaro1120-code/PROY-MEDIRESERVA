@@ -22,7 +22,8 @@ Consecuencias de esta decisión:
   secreta**, por lo que no se expone públicamente: el contrato se documenta en
   este archivo y en la Tabla 12 del documento.
 
-- **URL base:** `https://dnfwwqpcnfpfwnkbjhdr.supabase.co`
+- **URL base:** `https://<proyecto>.supabase.co`. El identificador real del
+  proyecto se resuelve desde `config/local.json`, que no se versiona.
 - **Clave en el cliente:** únicamente la publicable (`sb_publishable_...`). La
   clave `service_role` nunca se incluye en la aplicación ni en el repositorio.
 
@@ -66,7 +67,7 @@ el servidor**.
 ### Ruta de salud
 
 ```
-GET https://dnfwwqpcnfpfwnkbjhdr.supabase.co/rest/v1/rpc/salud
+GET https://<proyecto>.supabase.co/rest/v1/rpc/salud
 Header: apikey: <clave publicable>
 ```
 
