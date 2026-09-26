@@ -10,8 +10,15 @@ android/key.properties
 *.jks
 *.keystore
 .idea/
-.vscode/
+.vscode/*
+!.vscode/settings.json
 *.iml
 
 .vercel
 .env*
+
+# Metadatos Eclipse/JDT que generan las extensiones Java de VS Code
+**/.project
+**/.classpath
+**/.factorypath
+**/.settings/

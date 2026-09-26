@@ -75,6 +75,18 @@ Versiones tomadas de `pubspec.lock`, del SDK instalado y del entorno de ejecuci�
 - Archivo `config/local.json` con `SUPABASE_URL` y `SUPABASE_PUBLISHABLE_KEY`.
 - Para Android: un dispositivo o emulador. Para web: Chrome.
 
+> **Nota para VS Code (extensiones Java/Gradle).** El proyecto solo necesita las
+> extensiones de Flutter y Dart. Si además está instalado *Extension Pack for Java*
+> o *Gradle for Java*, su importador de Gradle intenta tratar `android/` como un
+> proyecto Eclipse y el panel **Problemas** muestra
+> `Cannot add nature org.eclipse.buildship.core.gradleprojectnature to Eclipse project app`
+> (`Could not set the project description for 'app' because the project description
+> file (.project) is out of sync with the file system`). El archivo
+> `.vscode/settings.json` desactiva esa importación y excluye `android/` del
+> análisis Java; si el aviso ya quedó guardado en la caché del editor, se elimina
+> con `Ctrl+Shift+P → "Java: Clean Workspace Cache..."` o ejecutando
+> `scripts\98_REPARAR_VSCODE_JAVA_WINDOWS.bat` con VS Code cerrado.
+
 ## 6. Instalación y ejecución
 
 ### 6.1 Base de datos
