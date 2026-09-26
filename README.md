@@ -163,11 +163,31 @@ npx vercel deploy --prod
 ```
 
 - **Dirección pública:** <https://medireserva.vercel.app>
-- **Plataforma:** Vercel (sitio estático, `outputDirectory: build/web`)
+- **Ruta de salud:** <https://medireserva.vercel.app/api/v1/salud>
+- **Plataforma:** Vercel (sitio estático `outputDirectory: build/web` + una función serverless)
 - **Base de datos:** Supabase
 
 > El despliegue se realiza desde el CLI sobre el artefacto ya compilado, porque el
 > entorno de compilación de Vercel no incluye el SDK de Flutter.
+
+### Variables de entorno en Vercel
+
+La función `api/v1/salud.js` lee las credenciales del proyecto en Vercel, **no del
+repositorio**:
+
+| Variable | Contenido |
+|---|---|
+| `SUPABASE_URL` | Dirección del proyecto de Supabase |
+| `SUPABASE_PUBLISHABLE_KEY` | Clave publicable |
+
+Se configuran con `vercel env add <nombre> production` o desde el panel del
+proyecto. La clave `service_role` no se usa en ningún caso.
+
+### `.vercelignore`
+
+El despliegue solo necesita `build/web/`, `api/` y `vercel.json`. El archivo
+`.vercelignore` deja fuera los artefactos de compilación —`build/app` con los APK
+llega a pesar más de 2 GB— y el código fuente, que el servidor no utiliza.
 
 > Tras publicar, la dirección debe registrarse en Supabase →
 > **Authentication → URL Configuration** (Site URL y Redirect URLs) para que el

@@ -1,0 +1,54 @@
+# ============================================================
+# Archivos que NO se suben a Vercel
+# ------------------------------------------------------------
+# El despliegue necesita:  build/web/ (el sitio), api/ (la funcion)
+# y vercel.json. Todo lo demas es fuente o artefactos de compilacion.
+#
+# IMPORTANTE: se enumeran las carpetas pesadas una por una y NO se usa
+# ningun comodin sobre build/, porque un build/* con negacion puede
+# dejar fuera build/web y entonces el sitio responde 404.
+# build/web NUNCA aparece en esta lista.
+# ============================================================
+
+# --- Artefactos pesados dentro de build/ (build/web se conserva) ---
+build/app/
+build/test_cache/
+build/shared_preferences_android/
+build/jni/
+build/jni_flutter/
+build/url_launcher_android/
+build/app_links/
+build/geolocator_android/
+build/package_info_plus/
+build/flutter_assets/
+build/unit_test_assets/
+build/native_assets/
+build/.cxx/
+build/reports/
+build/package_config.json
+build/*.dill
+build/*.track.dill
+
+# --- Cache de Dart y Flutter ---
+.dart_tool/
+.packages
+.pub/
+
+# --- Proyecto Android completo (APK e intermedios de Gradle) ---
+android/
+
+# --- Codigo fuente y documentacion: no se sirven desde el hosting ---
+lib/
+test/
+supabase/
+scripts/
+docs/
+config/
+evidencias_apk/
+platform_templates/
+.github/
+.vscode/
+
+# --- Control de versiones ---
+.git/
+.gitignore

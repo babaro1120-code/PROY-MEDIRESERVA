@@ -64,22 +64,48 @@ el servidor**.
 | POST | `/rest/v1/rpc/cambiar_estado_reserva` | sí | Profesional asignado, Administrador | `p_cita_id`, `p_estado` | 200 · 401 · 403 · 404 · 422 |
 | **GET** | **`/rest/v1/rpc/salud`** | **no** | **Pública** | **—** | **200 `{ "estado": "ok" }`** · 401 |
 
-### Ruta de salud
+### Rutas de salud
+
+El sistema expone **dos** rutas de salud: la pública del dominio propio y la que
+provee la plataforma de datos.
+
+**1. Ruta pública del sistema** (la que se declara en el contrato):
+
+```
+GET https://<dominio-publico>/api/v1/salud
+```
+
+```json
+{
+  "estado": "ok",
+  "servicio": "MediReserva",
+  "version": "1.0.0",
+  "ruta": "/api/v1/salud",
+  "base_de_datos": { "estado": "ok", "servicio": "MediReserva", "hora": "..." }
+}
+```
+
+Está implementada como función serverless en `api/v1/salud.js`. Sigue la
+convención `/api/v1/` del Módulo 4 y **comprueba las dos capas a la vez**: que
+el servicio responde y que la base de datos contesta. Las credenciales se leen
+de variables de entorno del proyecto en Vercel (`SUPABASE_URL` y
+`SUPABASE_PUBLISHABLE_KEY`), de modo que **no hay ninguna clave en el
+repositorio**. Responde 405 si el método no es GET o HEAD, y 503 si falta la
+configuración o la base no responde.
+
+**2. Ruta de la plataforma de datos:**
 
 ```
 GET https://<proyecto>.supabase.co/rest/v1/rpc/salud
 Header: apikey: <clave publicable>
 ```
 
-Respuesta esperada:
-
 ```json
 { "estado": "ok", "servicio": "MediReserva", "version": "1.0.0", "hora": "..." }
 ```
 
-Verifica de una sola vez que la API está en línea y que la base de datos
-responde. La función se declara `stable` porque es lo que habilita invocarla
-por GET, y no expone ningún dato del sistema.
+Es la función `public.salud()` de PostgreSQL. Se declara `stable` porque eso es
+lo que habilita invocarla por GET, y no expone ningún dato del sistema.
 
 ## 5. Familia de errores
 
