@@ -4,11 +4,11 @@
 **Tipo:** Aplicación web y móvil para reservas médicas
 **Metodología:** Kanban
 **Límite de trabajo en curso (WIP):** 2 tareas
-**Última actualización:** 25/09/2026
+**Última actualización:** 01/10/2026
 
 ---
 
-## ✅ HECHO — 23 tareas
+## ✅ HECHO — 26 tareas
 
 | ID | Tarea | Resultado |
 |---|---|---|
@@ -33,8 +33,11 @@
 | T-23 | Notificaciones automáticas | Disparadores que generan avisos al registrar, confirmar, atender o cancelar una reserva. |
 | T-24 | Reserva atómica y CRUD de reservas | Función `reservar_cita` en una sola transacción (sin `patient_id` desde el cliente), `cancelar_cita` que libera el bloque y cambio de estado autorizado por rol. |
 | T-25 | Despliegue público | Frontend web publicado y verificado: <https://medireserva.vercel.app> |
-| T-26 | Pruebas automatizadas con evidencia | 11 pruebas en Dart, 18 casos funcionales sobre PostgreSQL y análisis estático sin observaciones. |
+| T-26 | Pruebas automatizadas con evidencia | 14 pruebas en Dart, 18 casos funcionales sobre PostgreSQL y análisis estático sin observaciones. |
 | T-27 | Documento del E2 | Apartados 2.4, 2.5 y 2.6 redactados y correcciones del E1 aplicadas en el mismo archivo. |
+| T-28 | Agenda del profesional (RF-07) | El profesional publica, cierra y reabre sus bloques de atención, con autorización por RLS: no puede tocar la agenda de otro médico. |
+| T-29 | Verificación de RLS en producción | Aislamiento por rol comprobado sobre la base desplegada: un paciente no lee reservas ajenas, no puede publicar disponibilidad ni ascenderse de rol. Los rechazos se documentan con los códigos 401, 403 y 42501. |
+| T-30 | Documento del E3 | Apartados 2.1, 2.7 y 2.8 nuevos, diccionarios de las cuatro entidades restantes, tabla de casos de prueba con su evidencia y Figura 3 de arquitectura regenerada. |
 
 ---
 
@@ -47,19 +50,18 @@
 
 ---
 
-## 📋 BACKLOG — 1 tarea
+## 📋 BACKLOG — sin tareas en espera
 
-| ID | Tarea | Descripción |
-|---|---|---|
-| T-19 | Persistencia local / Offline | Conservar información básica cuando no haya conexión. Pendiente de decisión de alcance: el apartado 2.1 del documento lo declara y el sistema todavía no lo implementa. |
+Todas las tareas planificadas están en curso, hechas o declaradas fuera de alcance.
 
 ---
 
-## 🚫 FUERA DE ALCANCE (Won't have) — 1 tarea
+## 🚫 FUERA DE ALCANCE (Won't have) — 2 tareas
 
 | ID | Tarea | Justificación de la exclusión |
 |---|---|---|
-| T-21 | Geolocalización GPS | Se retiró del alcance para concentrar el esfuerzo en el flujo de reserva y en la integridad de los datos. |
+| T-21 | Geolocalización GPS | Requiere permisos de ubicación en el dispositivo y un servicio de mapas. El alcance acordado prioriza el flujo de reservas; se conserva como evolución futura. |
+| T-19 | Persistencia local / offline | Confirmar una reserva exige validar el bloque contra la base de datos en el momento de la operación, de modo que el flujo no puede completarse sin conexión. Se declara como límite del sistema. |
 
 ---
 
@@ -67,11 +69,11 @@
 
 | Estado | Cantidad | WIP |
 |---|---|---|
-| ✅ Hecho | 23 | — |
+| ✅ Hecho | 26 | — |
 | 🔄 En curso | 2 | Máximo 2 |
-| 📋 Backlog | 1 | — |
-| 🚫 Fuera de alcance | 1 | — |
-| **Total** | **27** | |
+| 📋 Backlog | 0 | — |
+| 🚫 Fuera de alcance | 2 | — |
+| **Total** | **30** | |
 
 ---
 
@@ -81,13 +83,13 @@
 ┌──────────────────┐      ┌──────────────────┐      ┌──────────────────┐
 │     BACKLOG      │ ───► │     EN CURSO     │ ───► │      HECHO       │
 │                  │      │                  │      │                  │
-│      1 tarea     │      │  Máximo 2 tareas │      │    23 tareas     │
+│    0 tareas      │      │  Máximo 2 tareas │      │    26 tareas     │
 └──────────────────┘      └──────────────────┘      └──────────────────┘
                                    │
                                    ▼
                         ┌──────────────────────┐
                         │  FUERA DE ALCANCE    │
-                        │     1 tarea          │
+                        │     2 tareas         │
                         └──────────────────────┘
 ```
 
@@ -136,4 +138,4 @@ Una tarea podrá pasar a **Hecho** cuando:
 
 **Proyecto:** MediReserva
 **Tablero:** Kanban
-**Última actualización:** 25/09/2026
+**Última actualización:** 01/10/2026
