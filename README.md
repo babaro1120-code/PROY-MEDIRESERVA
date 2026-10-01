@@ -102,6 +102,7 @@ En **Supabase → SQL Editor**, ejecutar en este orden:
 | 5 | `supabase/07_RESERVAS_RPC.sql` | CRUD de reservas y reserva atómica |
 | 6 | `supabase/08_ELIMINAR_MODULO_DEMO.sql` | Elimina la tabla de demostración del aula |
 | 7 | `supabase/09_SALUD.sql` | Ruta de salud de la API: `GET /rest/v1/rpc/salud` |
+| 8 | `supabase/10_DISPONIBILIDAD.sql` | Evita bloques de atención duplicados (RF-07) |
 
 Todos los scripts son idempotentes: pueden ejecutarse más de una vez sin
 duplicar datos. Cada uno termina con consultas de verificación.

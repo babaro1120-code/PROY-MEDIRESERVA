@@ -182,6 +182,23 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ],
               ),
+              if (_atiendeAgenda) ...[
+                const SizedBox(height: 13),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _card(
+                        Icons.schedule_outlined,
+                        const Color(0xFF6A3FD1),
+                        const Color(0xFFF4F1FE),
+                        'Mi Disponibilidad',
+                        'Publica los horarios en\nlos que podés atender',
+                        () => widget.onSelectTab?.call('horarios'),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
               const SizedBox(height: 13),
               Row(
                 children: [

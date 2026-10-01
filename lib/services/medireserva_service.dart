@@ -300,6 +300,96 @@ class MediReservaService {
         .eq('user_id', _userId);
   }
 
+  // ------------------------------------------------------------
+  // RF-07 · El profesional administra su propia disponibilidad.
+  //
+  // Ninguno de estos métodos filtra por médico en el cliente: el
+  // acotamiento lo impone la política RLS
+  // `availability_profesional_o_admin_write`, que solo deja tocar los
+  // bloques cuyo `doctor_id` pertenece al profesional autenticado.
+  // ------------------------------------------------------------
+
+  /// Fila de `doctors` del profesional autenticado.
+  ///
+  /// Se resuelve por `doctors.profile_id`, que vincula la cuenta de Auth con la
+  /// agenda médica. Devuelve `null` si la cuenta todavía no está vinculada, que
+  /// es lo que ocurre antes de ejecutar `05_ROLES_Y_RLS.sql` o cuando un
+  /// administrador aún no asignó al profesional.
+  Future<Doctor?> getMyDoctorRow() async {
+    try {
+      final row = await client
+          .from('doctors')
+          .select(
+            'id,name,specialty_id,photo_url,experience_years,rating,'
+            'specialties(name)',
+          )
+          .eq('profile_id', _userId)
+          .maybeSingle();
+
+      if (row == null) return null;
+      return Doctor.fromMap(Map<String, dynamic>.from(row));
+    } on PostgrestException {
+      // Falta 05_ROLES_Y_RLS.sql: la columna doctors.profile_id no existe.
+      return null;
+    }
+  }
+
+  /// Bloques de atención del profesional, desde hoy y hasta [days] días después.
+  Future<List<AvailabilitySlot>> getMyAvailability({int days = 30}) async {
+    final hoy = DateTime.now();
+    final desde = _dateOnly(DateTime(hoy.year, hoy.month, hoy.day));
+    final hasta = _dateOnly(hoy.add(Duration(days: days)));
+
+    final rows = await client
+        .from('doctor_availability')
+        .select('id,doctor_id,available_date,appointment_time,is_available')
+        .gte('available_date', desde)
+        .lte('available_date', hasta)
+        .order('available_date', ascending: true)
+        .order('appointment_time', ascending: true);
+
+    return (rows as List)
+        .map((row) => AvailabilitySlot.fromMap(Map<String, dynamic>.from(row)))
+        .toList();
+  }
+
+  /// Publica un bloque de atención nuevo.
+  Future<void> createAvailabilitySlot({
+    required String doctorId,
+    required DateTime date,
+    required String time,
+  }) async {
+    await client.from('doctor_availability').insert({
+      'doctor_id': doctorId,
+      'available_date': _dateOnly(date),
+      'appointment_time': _horaCompleta(time),
+      'is_available': true,
+    });
+  }
+
+  /// Abre o cierra un bloque sin borrarlo, para conservar el historial.
+  Future<void> setAvailabilitySlotAvailable({
+    required String slotId,
+    required bool available,
+  }) async {
+    await client
+        .from('doctor_availability')
+        .update({'is_available': available}).eq('id', slotId);
+  }
+
+  Future<void> deleteAvailabilitySlot(String slotId) async {
+    await client.from('doctor_availability').delete().eq('id', slotId);
+  }
+
+  /// PostgreSQL espera `HH:MM:SS` en una columna de tipo `time`.
+  String _horaCompleta(String value) {
+    final partes = value.split(':');
+    if (partes.length >= 3) return value;
+    final hh = partes.isNotEmpty ? partes[0].padLeft(2, '0') : '00';
+    final mm = partes.length > 1 ? partes[1].padLeft(2, '0') : '00';
+    return '$hh:$mm:00';
+  }
+
   /// Detecta si el error es "la función no existe todavía", para no confundirlo
   /// con un rechazo real de la reserva.
   bool _funcionRpcAusente(PostgrestException error) {

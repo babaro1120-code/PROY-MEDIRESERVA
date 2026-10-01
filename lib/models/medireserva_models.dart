@@ -132,3 +132,35 @@ class AgendaItem {
     );
   }
 }
+
+/// Un bloque de atención de la agenda del profesional (RF-07).
+///
+/// Corresponde a una fila de `doctor_availability`: una fecha y una hora. El
+/// campo [isAvailable] distingue el bloque publicado del que el profesional
+/// cerró temporalmente sin borrarlo, de modo que la agenda conserva su
+/// historial.
+class AvailabilitySlot {
+  const AvailabilitySlot({
+    required this.id,
+    required this.doctorId,
+    required this.date,
+    required this.time,
+    required this.isAvailable,
+  });
+
+  final String id;
+  final String doctorId;
+  final DateTime date;
+  final String time;
+  final bool isAvailable;
+
+  factory AvailabilitySlot.fromMap(Map<String, dynamic> map) {
+    return AvailabilitySlot(
+      id: map['id'].toString(),
+      doctorId: map['doctor_id'].toString(),
+      date: DateTime.parse(map['available_date'].toString()),
+      time: map['appointment_time'].toString(),
+      isAvailable: map['is_available'] as bool? ?? true,
+    );
+  }
+}

@@ -18,6 +18,10 @@ En **Supabase → SQL Editor**, uno por uno:
 6. `08_ELIMINAR_MODULO_DEMO.sql` — elimina la tabla `registros_demo` del aula.
 7. `09_SALUD.sql` — función `salud()`: expone `GET /rest/v1/rpc/salud`, la ruta
    de salud de la API, que responde `{ "estado": "ok" }`.
+8. `10_DISPONIBILIDAD.sql` — índice único sobre `doctor_availability`: un
+   profesional no puede publicar dos veces el mismo bloque de atención. Va
+   aparte de `05` para que un duplicado preexistente no haga fallar el script
+   de roles y RLS, que es el crítico.
 
 Todos son idempotentes y terminan con consultas de verificación.
 

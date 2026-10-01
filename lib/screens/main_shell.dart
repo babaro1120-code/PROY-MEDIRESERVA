@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/medireserva_service.dart';
 import 'agenda_screen.dart';
 import 'appointments_screen.dart';
+import 'availability_screen.dart';
 import 'home_screen.dart';
 import 'notifications_screen.dart';
 import 'profile_screen.dart';
@@ -64,6 +65,11 @@ class _MainShellState extends State<MainShell> {
         if (_atiendeAgenda)
           const _Destino(
               'agenda', 'Agenda', Icons.event_note_outlined, Icons.event_note),
+        // RF-07: el profesional y el administrador publican los bloques de
+        // atención; el paciente no administra ninguna agenda.
+        if (_atiendeAgenda)
+          const _Destino('horarios', 'Horarios', Icons.schedule_outlined,
+              Icons.schedule),
         const _Destino('citas', 'Citas', Icons.calendar_month_outlined,
             Icons.calendar_month),
         const _Destino(
@@ -77,6 +83,7 @@ class _MainShellState extends State<MainShell> {
 
   Widget _raizDe(String clave) => switch (clave) {
         'agenda' => const AgendaScreen(showBack: false),
+        'horarios' => const AvailabilityScreen(showBack: false),
         'citas' => const AppointmentsScreen(showBack: false),
         'perfil' => const ProfileScreen(showBack: false),
         'notificaciones' => const NotificationsScreen(showBack: false),

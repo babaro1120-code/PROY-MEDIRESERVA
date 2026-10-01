@@ -161,4 +161,46 @@ void main() {
       expect(appointment.specialty, 'Medicina General');
     });
   });
+
+  group('AvailabilitySlot.fromMap', () {
+    test('lee la fecha, la hora y el estado del bloque', () {
+      final slot = AvailabilitySlot.fromMap({
+        'id': '55555555-6666-7777-8888-999999999999',
+        'doctor_id': 'd1',
+        'available_date': '2026-10-05',
+        'appointment_time': '09:30:00',
+        'is_available': true,
+      });
+
+      expect(slot.id, '55555555-6666-7777-8888-999999999999');
+      expect(slot.doctorId, 'd1');
+      expect(slot.date, DateTime(2026, 10, 5));
+      expect(slot.time, '09:30:00');
+      expect(slot.isAvailable, isTrue);
+    });
+
+    test('un bloque cerrado conserva su fila, con is_available en false', () {
+      // Cerrar un bloque no lo borra: la agenda conserva su historial.
+      final slot = AvailabilitySlot.fromMap({
+        'id': 's2',
+        'doctor_id': 'd1',
+        'available_date': '2026-10-06',
+        'appointment_time': '10:00:00',
+        'is_available': false,
+      });
+
+      expect(slot.isAvailable, isFalse);
+    });
+
+    test('sin el campo is_available el bloque se considera disponible', () {
+      final slot = AvailabilitySlot.fromMap({
+        'id': 's3',
+        'doctor_id': 'd2',
+        'available_date': '2026-10-07',
+        'appointment_time': '11:15:00',
+      });
+
+      expect(slot.isAvailable, isTrue);
+    });
+  });
 }
