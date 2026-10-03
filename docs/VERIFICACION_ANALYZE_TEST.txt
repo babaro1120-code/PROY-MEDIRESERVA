@@ -1,23 +1,43 @@
-===== VERIFICACION 25/09/2026 18:20 =====
+VERIFICACION ESTATICA Y PRUEBAS AUTOMATIZADAS
+Proyecto: MediReserva - reservas de consultas medicas
+Repositorio: https://github.com/babaro1120-code/PROY-MEDIRESERVA
+Fecha de esta corrida: 02/10/2026 20:42
+Equipo: Windows - Flutter 3.44.8  channel stable  https://github.com/flutter/flutter.git - Dart SDK version: 3.12.2 (stable) (Tue Jun 9 01:11:39 2026 -0700) on "windows_x64"
 
---- flutter analyze ---
+Este archivo es la salida de los dos comandos de verificacion, tal como
+se ejecutan sobre el repositorio. Se reproduce con:
+  flutter pub get
+  flutter analyze
+  flutter test
+
+================================================================
+1. flutter analyze
+================================================================
 Analyzing Proyecto MEDIRESERVA...                               
-No issues found! (ran in 4.7s)
+No issues found! (ran in 93.7s)
 
---- flutter test ---
+================================================================
+2. flutter test
+================================================================
 00:00 +0: loading C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart
-00:00 +0: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: Specialty.fromMap convierte el id numérico y conserva el nombre
+00:00 +0: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: Specialty.fromMap convierte el id numrico y conserva el nombre
 00:00 +1: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: Specialty.fromMap usa valores por defecto cuando faltan datos
 00:00 +2: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: Doctor.fromMap lee el nombre de la especialidad anidada
 00:00 +3: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: Doctor.fromMap tolera datos ausentes
 00:00 +4: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: Appointment.fromMap combina fecha, hora y relaciones
 00:00 +5: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: Appointment.fromMap usa "pending" cuando no llega el estado
-00:00 +6: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: AgendaItem.fromMap lee el nombre del paciente desde la relación anidada
+00:00 +6: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: AgendaItem.fromMap lee el nombre del paciente desde la relacin anidada
 00:00 +7: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: AgendaItem.fromMap tolera que el paciente no llegue en la respuesta
-00:00 +8: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: respuesta de la función reservar_cita se mapea con Appointment sin adaptar nada
-00:00 +9: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: respuesta de la función reservar_cita no depende de patient_id: ese dato sale de auth.uid()
-00:00 +10: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/widget_test.dart: muestra el aviso de configuración cuando faltan SUPABASE_URL y la clave
-00:01 +11: All tests passed!
+00:00 +8: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: respuesta de la funcin reservar_cita se mapea con Appointment sin adaptar nada
+00:00 +9: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: respuesta de la funcin reservar_cita no depende de patient_id: ese dato sale de auth.uid()
+00:00 +10: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: AvailabilitySlot.fromMap lee la fecha, la hora y el estado del bloque
+00:00 +11: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: AvailabilitySlot.fromMap un bloque cerrado conserva su fila, con is_available en false
+00:00 +12: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: AvailabilitySlot.fromMap sin el campo is_available el bloque se considera disponible
+00:02 +13: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/widget_test.dart: muestra el aviso de configuracin cuando faltan SUPABASE_URL y la clave
+00:04 +14: All tests passed!
 
---- flutter build web --release ---
-BUILD OK: True (main.dart.js presente)
+================================================================
+RESUMEN
+================================================================
+  Analisis estatico: sin observaciones
+  Pruebas: todas en verde
