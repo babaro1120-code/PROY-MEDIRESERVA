@@ -207,6 +207,29 @@ flutter build apk --release --dart-define-from-file=config/local.json
 - Ruta: `build\app\outputs\flutter-apk\app-release.apk`
 - Instalación: `flutter install`, o copiar el APK al dispositivo e instalarlo.
 
+### 9.1 APK publicado (GitHub Releases)
+
+El APK de distribución **no se versiona dentro del repositorio**: pesa 50,9 MB y
+engordaría el historial de Git. Se publica como **GitHub Release**:
+
+- **Página de la release:** <https://github.com/babaro1120-code/PROY-MEDIRESERVA/releases/tag/v1.0.0>
+- **Descarga directa:** <https://github.com/babaro1120-code/PROY-MEDIRESERVA/releases/download/v1.0.0/MEDIRESERVA_1.0.0_release_01-10-2026.apk>
+- **Archivo:** `MEDIRESERVA_1.0.0_release_01-10-2026.apk`
+- **Tamaño:** 53.413.698 bytes (50,94 MB)
+- **SHA-256:** `0bb339ac3664312c7ad8fbb19a85a3dc7c392e557cb5b52085421b3ea84ad6e7`
+- **Título de la release:** "MediReserva 1.0.0 — versión de demostración"
+
+Para comprobar que el archivo descargado es el correcto:
+
+```powershell
+Get-FileHash .\MEDIRESERVA_1.0.0_release_01-10-2026.apk -Algorithm SHA256
+```
+
+> **Nota honesta sobre la firma.** El APK está firmado con la clave de
+> depuración, porque el proyecto no cuenta con un keystore de producción: sirve
+> para instalar y demostrar la aplicación, pero **no** para publicar en
+> Google Play.
+
 ## 10. Seguridad
 
 - **Autenticación:** Supabase Auth con JWT; las contraseñas las gestiona el
