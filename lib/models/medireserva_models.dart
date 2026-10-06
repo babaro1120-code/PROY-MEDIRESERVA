@@ -1,15 +1,29 @@
 class Specialty {
-  const Specialty({required this.id, required this.name, this.iconName});
+  const Specialty({
+    required this.id,
+    required this.name,
+    this.iconName,
+    this.active = true,
+  });
 
   final String id;
   final String name;
   final String? iconName;
+
+  /// Columna `specialties.active`.
+  ///
+  /// El administrador desactiva una especialidad en lugar de borrarla, para no
+  /// romper las reservas que la referencian. La política de lectura
+  /// `specialties_read_authenticated` solo muestra las activas, pero el
+  /// administrador ve todas porque `specialties_admin_write` es permisiva.
+  final bool active;
 
   factory Specialty.fromMap(Map<String, dynamic> map) {
     return Specialty(
       id: map['id'].toString(),
       name: map['name'] as String? ?? '',
       iconName: map['icon_name'] as String?,
+      active: map['active'] as bool? ?? true,
     );
   }
 }
@@ -23,6 +37,8 @@ class Doctor {
     this.photoUrl,
     this.experienceYears = 0,
     this.rating = 0,
+    this.active = true,
+    this.profileId,
   });
 
   final String id;
@@ -32,6 +48,16 @@ class Doctor {
   final String? photoUrl;
   final int experienceYears;
   final double rating;
+
+  /// Columna `doctors.active`: un médico inactivo deja de ofrecerse a los
+  /// pacientes, pero su historial de reservas se conserva.
+  final bool active;
+
+  /// Columna `doctors.profile_id`: cuenta de Auth del profesional.
+  ///
+  /// Es la que usa la política `availability_profesional_o_admin_write` a
+  /// través de `es_mi_agenda()`. El administrador puede asignarla o cambiarla.
+  final String? profileId;
 
   factory Doctor.fromMap(Map<String, dynamic> map) {
     final specialty = map['specialties'];
@@ -45,6 +71,8 @@ class Doctor {
       photoUrl: map['photo_url'] as String?,
       experienceYears: (map['experience_years'] as num?)?.toInt() ?? 0,
       rating: (map['rating'] as num?)?.toDouble() ?? 0,
+      active: map['active'] as bool? ?? true,
+      profileId: map['profile_id'] as String?,
     );
   }
 }

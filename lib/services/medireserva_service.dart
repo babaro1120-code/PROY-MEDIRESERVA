@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../models/medireserva_models.dart';
+import '../utils/medireserva_fechas.dart';
 
 class MediReservaService {
   MediReservaService(this.client);
@@ -381,14 +382,397 @@ class MediReservaService {
     await client.from('doctor_availability').delete().eq('id', slotId);
   }
 
-  /// PostgreSQL espera `HH:MM:SS` en una columna de tipo `time`.
-  String _horaCompleta(String value) {
-    final partes = value.split(':');
-    if (partes.length >= 3) return value;
-    final hh = partes.isNotEmpty ? partes[0].padLeft(2, '0') : '00';
-    final mm = partes.length > 1 ? partes[1].padLeft(2, '0') : '00';
-    return '$hh:$mm:00';
+  // ============================================================
+  // PANEL DE ADMINISTRACIÓN (rol `administrador`)
+  //
+  // Ninguno de estos métodos autoriza nada: la interfaz solo oculta lo
+  // que el rol no puede hacer y el servidor decide. Las tres políticas
+  // que ya están aplicadas cubren todo el panel:
+  //   · `specialties_admin_write`               -> specialties
+  //   · `doctors_admin_write`                   -> doctors
+  //   · `availability_profesional_o_admin_write`-> doctor_availability
+  // Si la cuenta no es administradora, PostgreSQL responde 42501 y la
+  // pantalla lo traduce con mensajeDeError().
+  // ============================================================
+
+  // ------------------------------------------------------------
+  // Mapas de datos. Son funciones estáticas y puras: se prueban sin
+  // red y garantizan que las columnas enviadas sean las del esquema.
+  // ------------------------------------------------------------
+
+  /// Especialidad nueva contra `specialties(name, icon_name, active)`.
+  static Map<String, dynamic> especialidadNueva({
+    required String name,
+    String? iconName,
+  }) {
+    return {
+      'name': name.trim(),
+      'icon_name': _textoOpcional(iconName),
+      'active': true,
+    };
   }
+
+  /// Datos editables de `specialties`; no toca `active`.
+  static Map<String, dynamic> cambiosDeEspecialidad({
+    required String name,
+    String? iconName,
+  }) {
+    return {
+      'name': name.trim(),
+      'icon_name': _textoOpcional(iconName),
+    };
+  }
+
+  /// Cambio de estado contra `specialties.active` o `doctors.active`.
+  static Map<String, dynamic> cambioDeEstado(bool active) => {'active': active};
+
+  /// Médico nuevo contra
+  /// `doctors(name, specialty_id, photo_url, experience_years, rating, active, profile_id)`.
+  ///
+  /// `profile_id` es la cuenta de Auth del profesional; se envía aunque sea
+  /// nula porque la columna admite `null` (médico sin cuenta vinculada).
+  static Map<String, dynamic> nuevoDoctor({
+    required String name,
+    required String specialtyId,
+    String? photoUrl,
+    int experienceYears = 0,
+    double rating = 0,
+    String? profileId,
+  }) {
+    return {
+      'name': name.trim(),
+      'specialty_id': specialtyId,
+      'photo_url': _textoOpcional(photoUrl),
+      'experience_years': experienceYears,
+      'rating': rating,
+      'active': true,
+      'profile_id': _textoOpcional(profileId),
+    };
+  }
+
+  /// Datos editables de `doctors`, incluida la especialidad y la cuenta
+  /// vinculada. Enviar `profile_id` nulo desvincula la cuenta.
+  static Map<String, dynamic> cambiosDeDoctor({
+    required String name,
+    required String specialtyId,
+    String? photoUrl,
+    int experienceYears = 0,
+    double rating = 0,
+    String? profileId,
+  }) {
+    return {
+      'name': name.trim(),
+      'specialty_id': specialtyId,
+      'photo_url': _textoOpcional(photoUrl),
+      'experience_years': experienceYears,
+      'rating': rating,
+      'profile_id': _textoOpcional(profileId),
+    };
+  }
+
+  /// Bloque nuevo contra
+  /// `doctor_availability(doctor_id, available_date, appointment_time, is_available)`.
+  static Map<String, dynamic> bloqueDeDisponibilidad({
+    required String doctorId,
+    required DateTime date,
+    required String time,
+  }) {
+    return {
+      'doctor_id': doctorId,
+      'available_date': fechaIso(date),
+      'appointment_time': horaCompleta(time),
+      'is_available': true,
+    };
+  }
+
+  /// Traduce el rechazo del servidor a un mensaje entendible para el usuario.
+  ///
+  /// Se centraliza acá para que todas las pantallas del panel informen igual.
+  /// El 403 por rol llega como `42501` (violación de política RLS) y tiene que
+  /// quedar claro que el problema es de permisos, no de datos.
+  static String mensajeDeError(Object error, {String? mensajeDuplicado}) {
+    if (error is PostgrestException) {
+      final codigo = error.code;
+      final texto = error.message.toLowerCase();
+
+      if (codigo == '42501' || texto.contains('row-level security')) {
+        return 'Tu cuenta no tiene permisos de administrador para esta acción.';
+      }
+      if (codigo == '23505') {
+        return mensajeDuplicado ?? 'Ya existe un registro con esos mismos datos.';
+      }
+      if (codigo == '23503') {
+        return 'El registro relacionado no existe: revisá la especialidad o la '
+            'cuenta elegida.';
+      }
+      if (codigo == '23514' ||
+          codigo == '22007' ||
+          codigo == '22008' ||
+          codigo == '22P02') {
+        return 'Alguno de los valores enviados no es válido para el sistema.';
+      }
+      if (codigo == 'PGRST116') {
+        return 'No se encontró el registro que se quería modificar.';
+      }
+      if (codigo == 'PGRST202' ||
+          texto.contains('schema cache') ||
+          texto.contains('could not find the function')) {
+        return 'Falta ejecutar supabase/05_ROLES_Y_RLS.sql en Supabase.';
+      }
+      if (codigo == 'PGRST205' ||
+          codigo == '42P01' ||
+          texto.contains('does not exist')) {
+        return 'La base de datos no tiene la tabla o la columna que esta '
+            'pantalla necesita.';
+      }
+      return error.message;
+    }
+    if (error is AuthException) return error.message;
+    return error.toString().replaceFirst('Exception: ', '');
+  }
+
+  static String? _textoOpcional(String? valor) {
+    final limpio = (valor ?? '').trim();
+    return limpio.isEmpty ? null : limpio;
+  }
+
+  // ------------------------------------------------------------
+  // Especialidades · tabla `specialties`
+  // ------------------------------------------------------------
+
+  /// Todas las especialidades, incluidas las desactivadas.
+  ///
+  /// El administrador las ve todas porque `specialties_admin_write` es una
+  /// política permisiva `for all`; para el resto de los roles el servidor
+  /// devuelve solo las activas, así que esta pantalla es solo para el panel.
+  Future<List<Specialty>> getAllSpecialties() async {
+    final rows = await client
+        .from('specialties')
+        .select('id,name,icon_name,active')
+        .order('name');
+
+    return (rows as List)
+        .map((row) => Specialty.fromMap(Map<String, dynamic>.from(row)))
+        .toList();
+  }
+
+  Future<void> createSpecialty({
+    required String name,
+    String? iconName,
+  }) async {
+    await client
+        .from('specialties')
+        .insert(especialidadNueva(name: name, iconName: iconName));
+  }
+
+  Future<void> updateSpecialty({
+    required String id,
+    required String name,
+    String? iconName,
+  }) async {
+    await client
+        .from('specialties')
+        .update(cambiosDeEspecialidad(name: name, iconName: iconName))
+        .eq('id', id);
+  }
+
+  /// Activa o desactiva sin borrar: las reservas conservan su especialidad.
+  Future<void> setSpecialtyActive({
+    required String id,
+    required bool active,
+  }) async {
+    await client
+        .from('specialties')
+        .update(cambioDeEstado(active))
+        .eq('id', id);
+  }
+
+  // ------------------------------------------------------------
+  // Médicos · tabla `doctors`
+  // ------------------------------------------------------------
+
+  /// Todos los médicos, incluidos los desactivados, con su especialidad.
+  Future<List<Doctor>> getAllDoctors() async {
+    final rows = await client
+        .from('doctors')
+        .select(
+          'id,name,specialty_id,photo_url,experience_years,rating,active,'
+          'profile_id,specialties(name)',
+        )
+        .order('name');
+
+    return (rows as List)
+        .map((row) => Doctor.fromMap(Map<String, dynamic>.from(row)))
+        .toList();
+  }
+
+  Future<void> createDoctor({
+    required String name,
+    required String specialtyId,
+    String? photoUrl,
+    int experienceYears = 0,
+    double rating = 0,
+    String? profileId,
+  }) async {
+    await client.from('doctors').insert(
+          nuevoDoctor(
+            name: name,
+            specialtyId: specialtyId,
+            photoUrl: photoUrl,
+            experienceYears: experienceYears,
+            rating: rating,
+            profileId: profileId,
+          ),
+        );
+  }
+
+  /// Actualiza los datos del médico, incluida su especialidad y su cuenta.
+  Future<void> updateDoctor({
+    required String id,
+    required String name,
+    required String specialtyId,
+    String? photoUrl,
+    int experienceYears = 0,
+    double rating = 0,
+    String? profileId,
+  }) async {
+    await client.from('doctors').update(
+          cambiosDeDoctor(
+            name: name,
+            specialtyId: specialtyId,
+            photoUrl: photoUrl,
+            experienceYears: experienceYears,
+            rating: rating,
+            profileId: profileId,
+          ),
+        ).eq('id', id);
+  }
+
+  Future<void> setDoctorActive({
+    required String id,
+    required bool active,
+  }) async {
+    await client.from('doctors').update(cambioDeEstado(active)).eq('id', id);
+  }
+
+  /// Perfiles disponibles para vincular con `doctors.profile_id`.
+  ///
+  /// `profiles_select_por_rol` deja que el administrador lea todos los
+  /// perfiles; el profesional solo se vería a sí mismo, por eso este método
+  /// pertenece al panel.
+  Future<List<Map<String, dynamic>>> getProfilesForLinking() async {
+    final rows = await client
+        .from('profiles')
+        .select('id,full_name,email,role')
+        .order('full_name');
+
+    return (rows as List)
+        .map((row) => Map<String, dynamic>.from(row))
+        .toList();
+  }
+
+  // ------------------------------------------------------------
+  // Disponibilidad de cualquier médico · tabla `doctor_availability`
+  //
+  // Variante de RF-07 para el administrador: el médico no sale de la
+  // sesión sino del parámetro, porque `es_administrador()` lo habilita
+  // sobre la agenda de cualquiera. Los métodos de escritura son los
+  // mismos que usa el profesional (`createAvailabilitySlot`,
+  // `setAvailabilitySlotAvailable`, `deleteAvailabilitySlot`): operan
+  // por `doctor_id` o por `id` de bloque, sin depender de la sesión.
+  // ------------------------------------------------------------
+
+  /// Bloques de [doctorId] desde hoy y hasta [days] días después.
+  Future<List<AvailabilitySlot>> getAvailabilityOfDoctor({
+    required String doctorId,
+    int days = 60,
+  }) async {
+    final hoy = DateTime.now();
+    final desde = fechaIso(DateTime(hoy.year, hoy.month, hoy.day));
+    final hasta = fechaIso(hoy.add(Duration(days: days)));
+
+    final rows = await client
+        .from('doctor_availability')
+        .select('id,doctor_id,available_date,appointment_time,is_available')
+        .eq('doctor_id', doctorId)
+        .gte('available_date', desde)
+        .lte('available_date', hasta)
+        .order('available_date', ascending: true)
+        .order('appointment_time', ascending: true);
+
+    return (rows as List)
+        .map((row) => AvailabilitySlot.fromMap(Map<String, dynamic>.from(row)))
+        .toList();
+  }
+
+  /// Publica varios bloques de [doctorId] de una sola vez (una jornada).
+  ///
+  /// Descarta las horas que ya existen para esa fecha: el índice único
+  /// `doctor_availability_slot_unique` las rechazaría con 23505 y no tiene
+  /// sentido que publicar una jornada falle porque una hora ya estaba
+  /// publicada. Devuelve cuántas filas nuevas se insertaron.
+  Future<int> createAvailabilitySlotsForDoctor({
+    required String doctorId,
+    required DateTime date,
+    required List<String> times,
+  }) async {
+    final horas = times.map(horaCompleta).toSet().toList()..sort();
+    if (horas.isEmpty) return 0;
+
+    final existentes = await client
+        .from('doctor_availability')
+        .select('appointment_time')
+        .eq('doctor_id', doctorId)
+        .eq('available_date', fechaIso(date));
+
+    final yaPublicadas = (existentes as List)
+        .map((row) => horaCorta(row['appointment_time'].toString()))
+        .toSet();
+
+    final nuevas = horas
+        .where((hora) => !yaPublicadas.contains(horaCorta(hora)))
+        .toList();
+    if (nuevas.isEmpty) return 0;
+
+    await client.from('doctor_availability').insert([
+      for (final hora in nuevas)
+        bloqueDeDisponibilidad(doctorId: doctorId, date: date, time: hora),
+    ]);
+
+    return nuevas.length;
+  }
+
+  /// Claves `fecha|hora` de los bloques de [doctorId] que ya tomó un paciente.
+  ///
+  /// Sirve para que el administrador no cierre ni borre un bloque reservado:
+  /// primero hay que cancelar la cita, igual que en la agenda del profesional.
+  Future<Set<String>> getReservedSlotKeys({
+    required String doctorId,
+    int days = 60,
+  }) async {
+    final hoy = DateTime.now();
+    final desde = fechaIso(DateTime(hoy.year, hoy.month, hoy.day));
+    final hasta = fechaIso(hoy.add(Duration(days: days)));
+
+    final rows = await client
+        .from('appointments')
+        .select('appointment_date,appointment_time')
+        .eq('doctor_id', doctorId)
+        .neq('status', 'cancelled')
+        .gte('appointment_date', desde)
+        .lte('appointment_date', hasta);
+
+    return <String>{
+      for (final row in (rows as List))
+        claveBloque(
+          DateTime.parse(row['appointment_date'].toString()),
+          row['appointment_time'].toString(),
+        ),
+    };
+  }
+
+  /// PostgreSQL espera `HH:MM:SS` en una columna de tipo `time`.
+  String _horaCompleta(String value) => horaCompleta(value);
 
   /// Detecta si el error es "la función no existe todavía", para no confundirlo
   /// con un rechazo real de la reserva.
@@ -399,9 +783,6 @@ class MediReservaService {
         message.contains('schema cache');
   }
 
-  String _dateOnly(DateTime value) {
-    final month = value.month.toString().padLeft(2, '0');
-    final day = value.day.toString().padLeft(2, '0');
-    return '${value.year}-$month-$day';
-  }
+  /// `YYYY-MM-DD` que espera una columna `date` de PostgreSQL.
+  String _dateOnly(DateTime value) => fechaIso(value);
 }
