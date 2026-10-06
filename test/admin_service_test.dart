@@ -180,5 +180,40 @@ void main() {
         'sin conexión',
       );
     });
+
+    test('una fecha fuera de rango (22008) explica el formato esperado', () {
+      final mensaje = MediReservaService.mensajeDeError(
+        const PostgrestException(
+          message: 'date/time field value out of range: "15/03/1990"',
+          code: '22008',
+        ),
+      );
+
+      expect(mensaje, contains('fecha'));
+      expect(mensaje, contains('DD/MM/AAAA'));
+    });
+
+    test('un formato de fecha inválido (22007) también se reconoce', () {
+      final mensaje = MediReservaService.mensajeDeError(
+        const PostgrestException(
+          message: 'invalid input syntax for type date: "ayer"',
+          code: '22007',
+        ),
+      );
+
+      expect(mensaje, contains('fecha'));
+    });
+
+    test('el error de fecha detectado en el cliente conserva su explicación',
+        () {
+      final mensaje = MediReservaService.mensajeDeError(
+        FormatException(
+          'La fecha "ayer" no es válida. Usá el formato DD/MM/AAAA.',
+        ),
+      );
+
+      expect(mensaje, contains('ayer'));
+      expect(mensaje, contains('DD/MM/AAAA'));
+    });
   });
 }

@@ -64,6 +64,96 @@ void main() {
     });
   });
 
+  group('fechaDiaMesAnio', () {
+    test('escribe el día y el mes con dos dígitos', () {
+      expect(fechaDiaMesAnio(DateTime(1990, 3, 15)), '15/03/1990');
+      expect(fechaDiaMesAnio(DateTime(2026, 10, 5)), '05/10/2026');
+    });
+
+    test('completa el año con cuatro dígitos', () {
+      expect(fechaDiaMesAnio(DateTime(945, 1, 2)), '02/01/0945');
+    });
+  });
+
+  group('fechaDesdeTexto', () {
+    test('lee el formato ISO que devuelve la columna date', () {
+      expect(fechaDesdeTexto('1990-03-15'), DateTime(1990, 3, 15));
+    });
+
+    test('lee el formato del formulario DD/MM/AAAA', () {
+      expect(fechaDesdeTexto('15/03/1990'), DateTime(1990, 3, 15));
+      // Sin ceros: el 5 de marzo, no el 15.
+      expect(fechaDesdeTexto('5/3/1990'), DateTime(1990, 3, 5));
+    });
+
+    test('acepta un valor ISO con hora', () {
+      expect(
+        fechaDesdeTexto('1990-03-15T00:00:00.000Z'),
+        DateTime(1990, 3, 15),
+      );
+    });
+
+    test('ignora los espacios de alrededor', () {
+      expect(fechaDesdeTexto('  1990-03-15 '), DateTime(1990, 3, 15));
+    });
+
+    test('devuelve null cuando el campo está vacío', () {
+      expect(fechaDesdeTexto(''), isNull);
+      expect(fechaDesdeTexto('   '), isNull);
+      expect(fechaDesdeTexto(null), isNull);
+    });
+
+    test('rechaza un texto que no es una fecha', () {
+      expect(() => fechaDesdeTexto('ayer'), throwsFormatException);
+      expect(() => fechaDesdeTexto('15-03-1990'), throwsFormatException);
+      expect(() => fechaDesdeTexto('1990'), throwsFormatException);
+      expect(() => fechaDesdeTexto('15/03/90'), throwsFormatException);
+    });
+
+    test('rechaza una fecha que no existe en el calendario', () {
+      expect(() => fechaDesdeTexto('31/02/1990'), throwsFormatException);
+      expect(() => fechaDesdeTexto('1990-02-31'), throwsFormatException);
+      expect(() => fechaDesdeTexto('15/13/1990'), throwsFormatException);
+      expect(() => fechaDesdeTexto('1990-00-10'), throwsFormatException);
+    });
+
+    test('el error explica el problema en español', () {
+      expect(
+        () => fechaDesdeTexto('ayer'),
+        throwsA(isA<FormatException>().having((e) => e.message, 'mensaje',
+            contains('no es válida'))),
+      );
+      expect(
+        () => fechaDesdeTexto('31/02/1990'),
+        throwsA(isA<FormatException>().having(
+            (e) => e.message, 'mensaje', contains('no existe'))),
+      );
+    });
+  });
+
+  group('fechaIsoOpcional', () {
+    test('normaliza el formato del formulario a ISO', () {
+      expect(fechaIsoOpcional('15/03/1990'), '1990-03-15');
+      expect(fechaIsoOpcional('5/3/1990'), '1990-03-05');
+    });
+
+    test('deja pasar un valor que ya está en ISO', () {
+      expect(fechaIsoOpcional('1990-03-15'), '1990-03-15');
+      expect(fechaIsoOpcional('1990-3-5'), '1990-03-05');
+    });
+
+    test('devuelve null cuando no hay fecha', () {
+      expect(fechaIsoOpcional(''), isNull);
+      expect(fechaIsoOpcional('   '), isNull);
+      expect(fechaIsoOpcional(null), isNull);
+    });
+
+    test('no deja pasar una fecha inexistente hacia la base', () {
+      expect(() => fechaIsoOpcional('31/02/1990'), throwsFormatException);
+      expect(() => fechaIsoOpcional('1990-02-31'), throwsFormatException);
+    });
+  });
+
   group('minutosDelDia', () {
     test('convierte HH:MM a minutos desde la medianoche', () {
       expect(minutosDelDia('00:00'), 0);

@@ -44,7 +44,10 @@ class MediReservaService {
       'full_name': (metadata['full_name'] as String? ?? '').trim(),
       'email': user?.email ?? '',
       'phone': (phone == null || phone.isEmpty) ? null : phone,
-      'birth_date': (birthDate == null || birthDate.isEmpty) ? null : birthDate,
+      // El registro guarda la fecha en ISO; si un metadato viejo viniera en
+      // otro formato se normaliza y, de no ser legible, se descarta: una fecha
+      // opcional no debe impedir crear el perfil.
+      'birth_date': _fechaIsoTolerante(birthDate),
     });
   }
 
@@ -271,12 +274,18 @@ class MediReservaService {
     required String birthDate,
     required String address,
   }) async {
+    // `birth_date` es una columna `date`: viaja siempre en `AAAA-MM-DD` o como
+    // `null`. La conversión se hace antes de tocar la red, así que un texto que
+    // no se entiende lanza un error en español y no un `22007`/`22008` que
+    // haría fallar el UPDATE completo (nombre, teléfono y dirección incluidos).
+    final fecha = fechaIsoOpcional(birthDate);
+
     await ensureProfile();
 
     await client.from('profiles').update({
       'full_name': fullName.trim(),
       'phone': phone.trim(),
-      'birth_date': birthDate.trim().isEmpty ? null : birthDate.trim(),
+      'birth_date': fecha,
       'address': address.trim(),
     }).eq('id', _userId);
   }
@@ -491,6 +500,10 @@ class MediReservaService {
   /// El 403 por rol llega como `42501` (violación de política RLS) y tiene que
   /// quedar claro que el problema es de permisos, no de datos.
   static String mensajeDeError(Object error, {String? mensajeDuplicado}) {
+    // Un texto que no es una fecha válida se detecta antes de llamar a la base
+    // y ya viene explicado en español.
+    if (error is FormatException) return error.message.toString();
+
     if (error is PostgrestException) {
       final codigo = error.code;
       final texto = error.message.toLowerCase();
@@ -505,10 +518,13 @@ class MediReservaService {
         return 'El registro relacionado no existe: revisá la especialidad o la '
             'cuenta elegida.';
       }
-      if (codigo == '23514' ||
-          codigo == '22007' ||
-          codigo == '22008' ||
-          codigo == '22P02') {
+      // 22007 (formato de fecha) y 22008 (fecha fuera de rango) llegan cuando
+      // el valor no es una fecha `AAAA-MM-DD` real.
+      if (codigo == '22007' || codigo == '22008') {
+        return 'La fecha enviada no es válida. Usá el formato DD/MM/AAAA, '
+            'por ejemplo 15/03/1990.';
+      }
+      if (codigo == '23514' || codigo == '22P02') {
         return 'Alguno de los valores enviados no es válido para el sistema.';
       }
       if (codigo == 'PGRST116') {
@@ -534,6 +550,16 @@ class MediReservaService {
   static String? _textoOpcional(String? valor) {
     final limpio = (valor ?? '').trim();
     return limpio.isEmpty ? null : limpio;
+  }
+
+  /// `AAAA-MM-DD` a partir de un metadato de registro; `null` si falta o si no
+  /// se puede interpretar como fecha.
+  static String? _fechaIsoTolerante(String? valor) {
+    try {
+      return fechaIsoOpcional(valor);
+    } on FormatException {
+      return null;
+    }
   }
 
   // ------------------------------------------------------------
