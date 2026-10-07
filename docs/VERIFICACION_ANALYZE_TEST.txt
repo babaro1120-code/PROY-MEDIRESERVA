@@ -1,7 +1,7 @@
 VERIFICACION ESTATICA Y PRUEBAS AUTOMATIZADAS
 Proyecto: MediReserva - reservas de consultas medicas
 Repositorio: https://github.com/babaro1120-code/PROY-MEDIRESERVA
-Fecha de esta corrida: 02/10/2026 20:42
+Fecha de esta corrida: 06/10/2026 20:58
 Equipo: Windows - Flutter 3.44.8  channel stable  https://github.com/flutter/flutter.git - Dart SDK version: 3.12.2 (stable) (Tue Jun 9 01:11:39 2026 -0700) on "windows_x64"
 
 Este archivo es la salida de los dos comandos de verificacion, tal como
@@ -10,31 +10,92 @@ se ejecutan sobre el repositorio. Se reproduce con:
   flutter analyze
   flutter test
 
+La suite cubre los modelos, las utilidades de fecha y hora, el servicio
+del panel de administracion y el dialogo de confirmacion de cancelacion.
+
 ================================================================
 1. flutter analyze
 ================================================================
 Analyzing Proyecto MEDIRESERVA...                               
-No issues found! (ran in 93.7s)
+No issues found! (ran in 21.3s)
 
 ================================================================
 2. flutter test
 ================================================================
-00:00 +0: loading C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart
-00:00 +0: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: Specialty.fromMap convierte el id numrico y conserva el nombre
-00:00 +1: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: Specialty.fromMap usa valores por defecto cuando faltan datos
-00:00 +2: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: Doctor.fromMap lee el nombre de la especialidad anidada
-00:00 +3: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: Doctor.fromMap tolera datos ausentes
-00:00 +4: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: Appointment.fromMap combina fecha, hora y relaciones
-00:00 +5: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: Appointment.fromMap usa "pending" cuando no llega el estado
-00:00 +6: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: AgendaItem.fromMap lee el nombre del paciente desde la relacin anidada
-00:00 +7: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: AgendaItem.fromMap tolera que el paciente no llegue en la respuesta
-00:00 +8: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: respuesta de la funcin reservar_cita se mapea con Appointment sin adaptar nada
-00:00 +9: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: respuesta de la funcin reservar_cita no depende de patient_id: ese dato sale de auth.uid()
-00:00 +10: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: AvailabilitySlot.fromMap lee la fecha, la hora y el estado del bloque
-00:00 +11: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: AvailabilitySlot.fromMap un bloque cerrado conserva su fila, con is_available en false
-00:00 +12: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: AvailabilitySlot.fromMap sin el campo is_available el bloque se considera disponible
-00:02 +13: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/widget_test.dart: muestra el aviso de configuracin cuando faltan SUPABASE_URL y la clave
-00:04 +14: All tests passed!
+00:00 +0: loading C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/admin_service_test.dart
+00:00 +0: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/admin_service_test.dart: especialidades  mapas para la tabla specialties especialidadNueva arma name, icon_name y active
+00:00 +1: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/admin_service_test.dart: especialidades  mapas para la tabla specialties especialidadNueva deja icon_name en null si no se eligi icono
+00:00 +2: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/admin_service_test.dart: especialidades  mapas para la tabla specialties cambiosDeEspecialidad no toca la columna active
+00:00 +3: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/admin_service_test.dart: especialidades  mapas para la tabla specialties cambioDeEstado solo enva la columna active
+00:00 +4: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/admin_service_test.dart: mdicos  mapas para la tabla doctors nuevoDoctor arma las columnas del esquema
+00:00 +5: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/admin_service_test.dart: mdicos  mapas para la tabla doctors nuevoDoctor deja la cuenta y la foto vacas en null
+00:00 +6: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/admin_service_test.dart: mdicos  mapas para la tabla doctors cambiosDeDoctor enva profile_id null para desvincular la cuenta
+00:00 +7: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/admin_service_test.dart: disponibilidad  mapas para doctor_availability bloqueDeDisponibilidad convierte fecha y hora al formato de la base
+00:00 +8: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/admin_service_test.dart: mensajeDeError  traduccin de los errores del servidor el rechazo por rol (42501) explica que falta el rol de administrador
+00:00 +9: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/admin_service_test.dart: mensajeDeError  traduccin de los errores del servidor una violacin de RLS sin cdigo tambin se reconoce
+00:00 +10: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/admin_service_test.dart: mensajeDeError  traduccin de los errores del servidor el duplicado usa el mensaje a medida cuando se indica
+00:00 +11: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/admin_service_test.dart: mensajeDeError  traduccin de los errores del servidor el duplicado usa el mensaje genrico si no se indica ninguno
+00:00 +12: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/admin_service_test.dart: mensajeDeError  traduccin de los errores del servidor la funcin que todava no existe avisa que falta el SQL de roles
+00:00 +13: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/admin_service_test.dart: mensajeDeError  traduccin de los errores del servidor un error desconocido conserva el mensaje del servidor
+00:00 +14: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/admin_service_test.dart: mensajeDeError  traduccin de los errores del servidor un error comn pierde el prefijo "Exception:"
+00:00 +15: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/admin_service_test.dart: mensajeDeError  traduccin de los errores del servidor una fecha fuera de rango (22008) explica el formato esperado
+00:00 +16: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/admin_service_test.dart: mensajeDeError  traduccin de los errores del servidor un formato de fecha invlido (22007) tambin se reconoce
+00:00 +17: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/admin_service_test.dart: mensajeDeError  traduccin de los errores del servidor el error de fecha detectado en el cliente conserva su explicacin
+00:00 +18: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/cancel_appointment_dialog_test.dart: el dilogo muestra la fecha, la hora y el profesional
+00:02 +19: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/cancel_appointment_dialog_test.dart: el dilogo muestra la fecha, la hora y el profesional
+00:02 +20: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/cancel_appointment_dialog_test.dart: el dilogo muestra la fecha, la hora y el profesional
+00:02 +21: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/cancel_appointment_dialog_test.dart: el dilogo muestra la fecha, la hora y el profesional
+00:02 +22: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/cancel_appointment_dialog_test.dart: el dilogo muestra la fecha, la hora y el profesional
+00:02 +23: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/cancel_appointment_dialog_test.dart: el dilogo muestra la fecha, la hora y el profesional
+00:02 +24: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/cancel_appointment_dialog_test.dart: el dilogo muestra la fecha, la hora y el profesional
+00:02 +25: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/cancel_appointment_dialog_test.dart: el dilogo muestra la fecha, la hora y el profesional
+00:02 +26: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/cancel_appointment_dialog_test.dart: el dilogo muestra la fecha, la hora y el profesional
+00:02 +27: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/cancel_appointment_dialog_test.dart: el dilogo muestra la fecha, la hora y el profesional
+00:02 +28: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/cancel_appointment_dialog_test.dart: el dilogo muestra la fecha, la hora y el profesional
+00:02 +29: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/cancel_appointment_dialog_test.dart: el dilogo muestra la fecha, la hora y el profesional
+00:02 +30: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/cancel_appointment_dialog_test.dart: el dilogo muestra la fecha, la hora y el profesional
+00:02 +31: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/cancel_appointment_dialog_test.dart: el dilogo muestra la fecha, la hora y el profesional
+00:02 +32: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/cancel_appointment_dialog_test.dart: el dilogo muestra la fecha, la hora y el profesional
+00:02 +33: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/cancel_appointment_dialog_test.dart: el dilogo muestra la fecha, la hora y el profesional
+00:02 +34: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/cancel_appointment_dialog_test.dart: el dilogo muestra la fecha, la hora y el profesional
+00:02 +35: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/cancel_appointment_dialog_test.dart: el dilogo muestra la fecha, la hora y el profesional
+00:02 +36: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/cancel_appointment_dialog_test.dart: el dilogo muestra la fecha, la hora y el profesional
+00:02 +37: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/cancel_appointment_dialog_test.dart: el dilogo muestra la fecha, la hora y el profesional
+00:02 +38: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/cancel_appointment_dialog_test.dart: el dilogo muestra la fecha, la hora y el profesional
+00:02 +39: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/cancel_appointment_dialog_test.dart: el dilogo muestra la fecha, la hora y el profesional
+00:02 +40: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/cancel_appointment_dialog_test.dart: el dilogo muestra la fecha, la hora y el profesional
+00:03 +41: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/cancel_appointment_dialog_test.dart: el dilogo muestra la fecha, la hora y el profesional
+00:03 +42: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/cancel_appointment_dialog_test.dart: el dilogo muestra la fecha, la hora y el profesional
+00:03 +43: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/cancel_appointment_dialog_test.dart: el dilogo muestra la fecha, la hora y el profesional
+00:03 +44: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/cancel_appointment_dialog_test.dart: el dilogo muestra la fecha, la hora y el profesional
+00:03 +45: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/cancel_appointment_dialog_test.dart: el dilogo muestra la fecha, la hora y el profesional
+00:03 +46: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/cancel_appointment_dialog_test.dart: el dilogo muestra la fecha, la hora y el profesional
+00:03 +47: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/cancel_appointment_dialog_test.dart: el dilogo muestra la fecha, la hora y el profesional
+00:03 +48: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/cancel_appointment_dialog_test.dart: el dilogo muestra la fecha, la hora y el profesional
+00:03 +49: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/cancel_appointment_dialog_test.dart: el dilogo muestra la fecha, la hora y el profesional
+00:03 +50: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/cancel_appointment_dialog_test.dart: el dilogo muestra la fecha, la hora y el profesional
+00:03 +51: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/cancel_appointment_dialog_test.dart: el dilogo muestra la fecha, la hora y el profesional
+00:03 +52: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/cancel_appointment_dialog_test.dart: el dilogo muestra la fecha, la hora y el profesional
+00:03 +53: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/cancel_appointment_dialog_test.dart: el dilogo muestra la fecha, la hora y el profesional
+00:03 +54: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/cancel_appointment_dialog_test.dart: el dilogo muestra la fecha, la hora y el profesional
+00:03 +55: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/cancel_appointment_dialog_test.dart: al elegir volver atrs no se cancela la cita
+00:03 +56: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/cancel_appointment_dialog_test.dart: al cerrar el dilogo sin elegir no se cancela la cita
+00:03 +57: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/cancel_appointment_dialog_test.dart: solo al confirmar se cancela la cita
+00:05 +58: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: Specialty.fromMap convierte el id numrico y conserva el nombre
+00:05 +59: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: Specialty.fromMap usa valores por defecto cuando faltan datos
+00:05 +60: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: Doctor.fromMap lee el nombre de la especialidad anidada
+00:05 +61: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: Doctor.fromMap tolera datos ausentes
+00:05 +62: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: Appointment.fromMap combina fecha, hora y relaciones
+00:05 +63: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: Appointment.fromMap usa "pending" cuando no llega el estado
+00:05 +64: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: AgendaItem.fromMap lee el nombre del paciente desde la relacin anidada
+00:05 +65: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: AgendaItem.fromMap tolera que el paciente no llegue en la respuesta
+00:05 +66: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: respuesta de la funcin reservar_cita se mapea con Appointment sin adaptar nada
+00:05 +67: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: respuesta de la funcin reservar_cita no depende de patient_id: ese dato sale de auth.uid()
+00:05 +68: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: AvailabilitySlot.fromMap lee la fecha, la hora y el estado del bloque
+00:05 +69: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: AvailabilitySlot.fromMap un bloque cerrado conserva su fila, con is_available en false
+00:05 +70: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/medireserva_models_test.dart: AvailabilitySlot.fromMap sin el campo is_available el bloque se considera disponible
+00:06 +71: C:/Users/US4R/Desktop/DIPLOMADO/Proyecto MEDIRESERVA/test/widget_test.dart: muestra el aviso de configuracin cuando faltan SUPABASE_URL y la clave
+00:07 +72: All tests passed!
 
 ================================================================
 RESUMEN
