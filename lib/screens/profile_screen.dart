@@ -134,9 +134,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   /// Abre el calendario para elegir la fecha de nacimiento (1900 hasta hoy).
   ///
-  /// El proyecto no depende de `flutter_localizations`, así que los nombres de
-  /// mes y día del calendario los pone Flutter en inglés; los textos que sí
-  /// controlamos van en español.
+  /// Los nombres de mes y de día del calendario los aporta
+  /// `flutter_localizations` (español), configurado en `lib/main.dart`; acá solo
+  /// se ajustan los textos propios de este campo.
   Future<void> _elegirFecha() async {
     final hoy = DateTime.now();
     final elegida = await showDatePicker(

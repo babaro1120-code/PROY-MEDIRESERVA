@@ -1,8 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'auth/auth_gate.dart';
 import 'widgets/medireserva_ui.dart';
+
+/// Idiomas que entiende la interfaz. El español va primero porque es el idioma
+/// en el que se entrega la aplicación.
+const List<Locale> kMediReservaLocales = <Locale>[Locale('es'), Locale('en')];
+
+/// Delegados de localización que vienen con el SDK de Flutter (material,
+/// widgets y Cupertino). Sin ellos el calendario de `showDatePicker`, los
+/// tooltips y demás textos del sistema se muestran en inglés.
+const List<LocalizationsDelegate<dynamic>> kMediReservaDelegados =
+    <LocalizationsDelegate<dynamic>>[
+  GlobalMaterialLocalizations.delegate,
+  GlobalWidgetsLocalizations.delegate,
+  GlobalCupertinoLocalizations.delegate,
+];
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,6 +43,11 @@ class MediReservaApp extends StatelessWidget {
   Widget build(BuildContext context) => MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'MediReserva',
+        // Se fija el español para que el calendario y los textos del sistema no
+        // dependan del idioma del navegador ni del teléfono.
+        locale: const Locale('es'),
+        supportedLocales: kMediReservaLocales,
+        localizationsDelegates: kMediReservaDelegados,
         theme: ThemeData(
             useMaterial3: true,
             colorScheme: ColorScheme.fromSeed(seedColor: kMediBlue),
@@ -44,6 +64,9 @@ class _MissingConfigApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      locale: const Locale('es'),
+      supportedLocales: kMediReservaLocales,
+      localizationsDelegates: kMediReservaDelegados,
       home: Scaffold(
         backgroundColor: kMediBg,
         body: Center(
