@@ -4,11 +4,11 @@
 **Tipo:** Aplicación web y móvil para reservas médicas
 **Metodología:** Kanban
 **Límite de trabajo en curso (WIP):** 2 tareas
-**Última actualización:** 01/10/2026
+**Última actualización:** 06/10/2026
 
 ---
 
-## ✅ HECHO — 26 tareas
+## ✅ HECHO — 27 tareas
 
 | ID | Tarea | Resultado |
 |---|---|---|
@@ -28,12 +28,13 @@
 | T-14 | Consulta y filtrado de citas | El paciente consulta y filtra sus citas por fecha, médico y estado. |
 | T-15 | Historial y estado de reservas | Historial de citas y estados: pendiente, confirmada, atendida y cancelada. |
 | T-16 | Comprobante de reserva | Comprobante con los datos de la cita y el número de reserva. |
+| T-17 | Gestión de usuarios y roles: panel de administración web | Interfaz web de administración con cuatro pantallas —panel de inicio, especialidades, médicos y horarios—, navegación responsive con barra lateral desde 900 píxeles y operaciones respaldadas por las políticas RLS vigentes (`specialties_admin_write`, `doctors_admin_write`, `availability_profesional_o_admin_write`). Desplegado y verificado contra la base real. |
 | T-18 | Disponibilidad por médico | Horarios disponibles de cada profesional médico. |
 | T-22 | Roles y autorización con RLS | Tres roles (paciente, profesional y administrador), funciones `rol_actual()` y `es_administrador()`, y políticas de seguridad por rol. Un disparador impide que el autorregistro se asigne un rol privilegiado. |
 | T-23 | Notificaciones automáticas | Disparadores que generan avisos al registrar, confirmar, atender o cancelar una reserva. |
 | T-24 | Reserva atómica y CRUD de reservas | Función `reservar_cita` en una sola transacción (sin `patient_id` desde el cliente), `cancelar_cita` que libera el bloque y cambio de estado autorizado por rol. |
 | T-25 | Despliegue público | Frontend web publicado y verificado: <https://medireserva.vercel.app> |
-| T-26 | Pruebas automatizadas con evidencia | 14 pruebas en Dart, 18 casos funcionales sobre PostgreSQL y análisis estático sin observaciones. |
+| T-26 | Pruebas automatizadas con evidencia | 72 pruebas en Dart, todas en verde, 18 casos funcionales sobre PostgreSQL y análisis estático sin observaciones. |
 | T-27 | Documento del E2 | Apartados 2.4, 2.5 y 2.6 redactados y correcciones del E1 aplicadas en el mismo archivo. |
 | T-28 | Agenda del profesional (RF-07) | El profesional publica, cierra y reabre sus bloques de atención, con autorización por RLS: no puede tocar la agenda de otro médico. |
 | T-29 | Verificación de RLS en producción | Aislamiento por rol comprobado sobre la base desplegada: un paciente no lee reservas ajenas, no puede publicar disponibilidad ni ascenderse de rol. Los rechazos se documentan con los códigos 401, 403 y 42501. |
@@ -45,7 +46,6 @@
 
 | ID | Tarea | Estado |
 |---|---|---|
-| T-17 | Gestión de usuarios y roles | En desarrollo: la interfaz de administración de usuarios y roles. |
 | T-20 | Publicación de reglas de reserva | En desarrollo: reglas visibles para reservar, cancelar y reprogramar. |
 
 ---
@@ -69,8 +69,8 @@ Todas las tareas planificadas están en curso, hechas o declaradas fuera de alca
 
 | Estado | Cantidad | WIP |
 |---|---|---|
-| ✅ Hecho | 26 | — |
-| 🔄 En curso | 2 | Máximo 2 |
+| ✅ Hecho | 27 | — |
+| 🔄 En curso | 1 | Máximo 2 |
 | 📋 Backlog | 0 | — |
 | 🚫 Fuera de alcance | 2 | — |
 | **Total** | **30** | |
@@ -83,7 +83,7 @@ Todas las tareas planificadas están en curso, hechas o declaradas fuera de alca
 ┌──────────────────┐      ┌──────────────────┐      ┌──────────────────┐
 │     BACKLOG      │ ───► │     EN CURSO     │ ───► │      HECHO       │
 │                  │      │                  │      │                  │
-│    0 tareas      │      │  Máximo 2 tareas │      │    26 tareas     │
+│    0 tareas      │      │  Máximo 2 tareas │      │    27 tareas     │
 └──────────────────┘      └──────────────────┘      └──────────────────┘
                                    │
                                    ▼
@@ -138,4 +138,4 @@ Una tarea podrá pasar a **Hecho** cuando:
 
 **Proyecto:** MediReserva
 **Tablero:** Kanban
-**Última actualización:** 01/10/2026
+**Última actualización:** 06/10/2026

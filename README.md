@@ -43,7 +43,9 @@ profesionales, evitando la doble asignación de un mismo horario.
 - **Estados de interfaz:** cada pantalla que consulta datos resuelve carga,
   vacío, error y datos, y muestra el mensaje de error de la API.
 - **Roles:** paciente, profesional y administrador, con autorización aplicada en
-  el servidor mediante RLS.
+  el servidor mediante RLS. El rol administrador cuenta con un **panel de
+  administración web** desde el que gestiona especialidades, médicos y horarios,
+  con navegación responsive mediante barra lateral desde 900 píxeles.
 
 ## 4. Tecnologías utilizadas
 
@@ -272,9 +274,12 @@ flutter test
 | Nivel | Evidencia | Resultado |
 |---|---|---|
 | Análisis estático | `flutter analyze` | Sin observaciones |
-| Modelos y contrato de la API | `test/medireserva_models_test.dart` | 11 de 11 |
-| Interfaz | `test/widget_test.dart` | 1 de 1 |
+| Modelos y contrato de la API | `test/medireserva_models_test.dart` | 13 de 13 |
+| Fechas y horas | `test/medireserva_fechas_test.dart` | 36 de 36 |
+| Panel de administración | `test/admin_service_test.dart` | 18 de 18 |
+| Interfaz | `test/widget_test.dart` y `test/cancel_appointment_dialog_test.dart` | 5 de 5 |
 | Base de datos y reglas de negocio | `docs/PRUEBAS_SQL.md` | 18 de 18 |
+| **Total de pruebas en Dart** | `flutter test` | **72 en verde** |
 
 Las pruebas de la base de datos verifican, entre otras cosas, que el
 autorregistro no pueda asignarse un rol privilegiado, que un segundo intento
