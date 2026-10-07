@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/medireserva_models.dart';
 import '../services/medireserva_service.dart';
 import '../widgets/medireserva_ui.dart';
+import 'cancel_appointment_dialog.dart';
 
 /// Agenda de reservas para el profesional y el administrador.
 ///
@@ -61,6 +62,19 @@ class _AgendaScreenState extends State<AgendaScreen> {
         SnackBar(content: Text(_errorLegible(error))),
       );
     }
+  }
+
+  /// Cancelar libera el bloque horario y no se puede deshacer: se pregunta
+  /// antes y solo se llama al servicio si el usuario confirma.
+  Future<void> _confirmarCancelacion(AgendaItem item) async {
+    final confirmado = await showCancelAppointmentDialog(
+      context,
+      fecha: _fecha(item.date),
+      hora: item.time.substring(0, 5),
+      profesional: item.doctor,
+    );
+    if (!confirmado || !mounted) return;
+    await _cambiarEstado(item, 'cancelled');
   }
 
   /// Traduce el rechazo del servidor a un mensaje entendible.
@@ -256,7 +270,7 @@ class _AgendaScreenState extends State<AgendaScreen> {
                   ),
                 ),
                 TextButton(
-                  onPressed: () => _cambiarEstado(a, 'cancelled'),
+                  onPressed: () => _confirmarCancelacion(a),
                   child: const Text(
                     'Cancelar',
                     style: TextStyle(fontSize: 11.2, color: Colors.red),

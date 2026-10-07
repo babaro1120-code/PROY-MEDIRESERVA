@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/medireserva_models.dart';
 import '../services/medireserva_service.dart';
 import '../widgets/medireserva_ui.dart';
+import 'cancel_appointment_dialog.dart';
 import 'reservation_start_screen.dart';
 
 class AppointmentsScreen extends StatefulWidget {
@@ -154,25 +155,34 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                         fontWeight: FontWeight.bold))),
             if (a.status == 'confirmed' || a.status == 'pending')
               TextButton(
-                  onPressed: () => _cancel(a.id),
+                  onPressed: () => _cancel(a),
                   child: const Text('Cancelar',
                       style: TextStyle(fontSize:11.2, color: Colors.red)))
           ])
         ]));
   }
 
-  Future<void> _cancel(String id) async {
+  Future<void> _cancel(Appointment a) async {
+    // Cancelar libera el bloque horario y no se puede deshacer: primero se
+    // pregunta. Si el usuario vuelve atrás o cierra el diálogo, no se toca nada.
+    final confirmado = await showCancelAppointmentDialog(
+      context,
+      fecha: _date(a.date),
+      hora: a.time.substring(0, 5),
+      profesional: a.doctor,
+    );
+    if (!confirmado || !mounted) return;
+
     try {
-      await MediReservaService(Supabase.instance.client).cancelAppointment(id);
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Cita cancelada')));
-        _refresh();
-      }
-    } catch (e) {
-      if (mounted)
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('No se pudo cancelar: $e')));
+      await MediReservaService(Supabase.instance.client).cancelAppointment(a.id);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Cita cancelada. El bloque horario quedó libre.')));
+      _refresh();
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(MediReservaService.mensajeDeError(error))));
     }
   }
 
