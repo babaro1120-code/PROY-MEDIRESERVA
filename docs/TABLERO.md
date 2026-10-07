@@ -8,7 +8,7 @@
 
 ---
 
-## ✅ HECHO — 27 tareas
+## ✅ HECHO — 28 tareas
 
 | ID | Tarea | Resultado |
 |---|---|---|
@@ -30,6 +30,7 @@
 | T-16 | Comprobante de reserva | Comprobante con los datos de la cita y el número de reserva. |
 | T-17 | Gestión de usuarios y roles: panel de administración web | Interfaz web de administración con cuatro pantallas —panel de inicio, especialidades, médicos y horarios—, navegación responsive con barra lateral desde 900 píxeles y operaciones respaldadas por las políticas RLS vigentes (`specialties_admin_write`, `doctors_admin_write`, `availability_profesional_o_admin_write`). Desplegado y verificado contra la base real. |
 | T-18 | Disponibilidad por médico | Horarios disponibles de cada profesional médico. |
+| T-20 | Publicación de reglas de reserva | Las reglas se muestran al usuario: el diálogo de cancelación advierte que la acción libera el bloque horario para otro paciente y que no se puede deshacer. La reprogramación se realiza liberando el bloque y reservando de nuevo, que es el flujo que la aplicación ofrece. |
 | T-22 | Roles y autorización con RLS | Tres roles (paciente, profesional y administrador), funciones `rol_actual()` y `es_administrador()`, y políticas de seguridad por rol. Un disparador impide que el autorregistro se asigne un rol privilegiado. |
 | T-23 | Notificaciones automáticas | Disparadores que generan avisos al registrar, confirmar, atender o cancelar una reserva. |
 | T-24 | Reserva atómica y CRUD de reservas | Función `reservar_cita` en una sola transacción (sin `patient_id` desde el cliente), `cancelar_cita` que libera el bloque y cambio de estado autorizado por rol. |
@@ -42,17 +43,15 @@
 
 ---
 
-## 🔄 EN CURSO — Límite: 2
+## 🔄 EN CURSO — sin tareas
 
-| ID | Tarea | Estado |
-|---|---|---|
-| T-20 | Publicación de reglas de reserva | En desarrollo: reglas visibles para reservar, cancelar y reprogramar. |
+No hay tareas en curso: el trabajo planificado está terminado o declarado fuera de alcance.
 
 ---
 
 ## 📋 BACKLOG — sin tareas en espera
 
-Todas las tareas planificadas están en curso, hechas o declaradas fuera de alcance.
+No hay tareas en espera: el trabajo planificado está hecho o declarado fuera de alcance.
 
 ---
 
@@ -69,8 +68,8 @@ Todas las tareas planificadas están en curso, hechas o declaradas fuera de alca
 
 | Estado | Cantidad | WIP |
 |---|---|---|
-| ✅ Hecho | 27 | — |
-| 🔄 En curso | 1 | Máximo 2 |
+| ✅ Hecho | 28 | — |
+| 🔄 En curso | 0 | Máximo 2 |
 | 📋 Backlog | 0 | — |
 | 🚫 Fuera de alcance | 2 | — |
 | **Total** | **30** | |
@@ -83,7 +82,7 @@ Todas las tareas planificadas están en curso, hechas o declaradas fuera de alca
 ┌──────────────────┐      ┌──────────────────┐      ┌──────────────────┐
 │     BACKLOG      │ ───► │     EN CURSO     │ ───► │      HECHO       │
 │                  │      │                  │      │                  │
-│    0 tareas      │      │  Máximo 2 tareas │      │    27 tareas     │
+│    0 tareas      │      │  Máximo 2 tareas │      │    28 tareas     │
 └──────────────────┘      └──────────────────┘      └──────────────────┘
                                    │
                                    ▼
