@@ -5,6 +5,14 @@
 Proyecto final del Diplomado en Desarrollo Web y Aplicaciones Móviles · UAJMS 2026
 Autor: Alvaro Vladimir Olivera Solano · Grupo 3
 
+![Estado de la ruta de salud](https://github.com/babaro1120-code/PROY-MEDIRESERVA/actions/workflows/salud.yml/badge.svg)
+
+El badge refleja el **monitoreo automático cada 15 minutos** de la ruta
+`GET /api/v1/salud` de <https://medireserva.vercel.app>: si el servicio o su base
+de datos dejan de responder, el badge se pone en rojo. El historial completo de
+cada ejecución está en la pestaña **Actions** del repositorio; el detalle del
+monitoreo se explica en [`docs/MONITOREO.md`](docs/MONITOREO.md).
+
 ---
 
 ## 1. Descripción
@@ -169,6 +177,9 @@ npx vercel deploy --prod
 - **Ruta de salud:** <https://medireserva.vercel.app/api/v1/salud>
 - **Plataforma:** Vercel (sitio estático `outputDirectory: build/web` + una función serverless)
 - **Base de datos:** Supabase
+
+Esa ruta de salud se vigila con monitoreo automático cada 15 minutos; el detalle
+está en [`docs/MONITOREO.md`](docs/MONITOREO.md).
 
 > El despliegue se realiza desde el CLI sobre el artefacto ya compilado, porque el
 > entorno de compilación de Vercel no incluye el SDK de Flutter.

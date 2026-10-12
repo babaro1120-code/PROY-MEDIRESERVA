@@ -1,0 +1,166 @@
+name: Salud
+
+# Monitoreo activo de la ruta de salud publica del sistema desplegado.
+#
+# Notas de operacion:
+#
+# 1. El cron de GitHub Actions se ejecuta en hora UTC y puede demorar algunos
+#    minutos respecto de la hora programada cuando la plataforma esta cargada.
+#    Esa demora es normal y no significa que el monitoreo este roto.
+# 2. GitHub desactiva los workflows programados (schedule) despues de 60 dias
+#    sin actividad en el repositorio. Si el badge deja de actualizarse y la
+#    pestana Actions no muestra ejecuciones nuevas, hay que volver a habilitar
+#    el workflow con el boton "Enable workflow"; cualquier push a la rama
+#    principal tambien reinicia ese contador de inactividad.
+# 3. La ruta de salud es publica: no se necesitan secretos ni credenciales.
+# 4. El chequeo usa el Node.js que ya trae la imagen del runner, asi que no hay
+#    dependencias que instalar, ni actions/checkout, ni herramientas de pago.
+
+on:
+  schedule:
+    # Cada 15 minutos, en hora UTC.
+    - cron: '*/15 * * * *'
+  # Permite ejecutarlo a mano desde la pestana Actions (boton "Run workflow").
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  salud:
+    name: Verificar GET /api/v1/salud
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Consultar y validar la ruta de salud
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # El chequeo viaja embebido en este archivo: se escribe en un archivo
+          # temporal y se ejecuta con el Node.js que ya trae la imagen del
+          # runner de ubuntu-latest.
+          ARCHIVO="${RUNNER_TEMP:-/tmp}/chequeo_salud.mjs"
+
+          cat > "$ARCHIVO" <<'JS'
+          // Monitoreo activo de la ruta de salud de MediReserva.
+          //
+          // Se ejecuta con el Node.js que ya trae la imagen ubuntu-latest del runner de
+          // GitHub Actions: no requiere dependencias, ni secretos, ni herramientas
+          // externas. La ruta es publica.
+          import { appendFileSync } from 'node:fs';
+
+          const RUTA = 'https://medireserva.vercel.app/api/v1/salud';
+          const TIEMPO_LIMITE_MS = 30000;
+
+          const inicio = process.hrtime.bigint();
+          let codigo = '000';
+          let cuerpo = '';
+          let errorRed = '';
+
+          try {
+            const respuesta = await fetch(RUTA, {
+              method: 'GET',
+              redirect: 'follow',
+              headers: { accept: 'application/json', 'user-agent': 'medireserva-monitor-salud' },
+              signal: AbortSignal.timeout(TIEMPO_LIMITE_MS),
+            });
+            codigo = String(respuesta.status);
+            cuerpo = await respuesta.text();
+          } catch (error) {
+            errorRed = error && error.message ? error.message : String(error);
+          }
+
+          const latenciaMs = Math.round(Number(process.hrtime.bigint() - inicio) / 1e6);
+
+          let datos = null;
+          let errorJson = '';
+          try {
+            datos = JSON.parse(cuerpo);
+          } catch (error) {
+            errorJson = error && error.message ? error.message : String(error);
+          }
+
+          // Lee un campo del JSON y devuelve "desconocido" si no existe.
+          function leer(ruta) {
+            let valor = datos;
+            for (const clave of ruta.split('.')) {
+              if (valor === null || typeof valor !== 'object') return 'desconocido';
+              valor = valor[clave];
+            }
+            if (valor === undefined || valor === null || valor === '') return 'desconocido';
+            return String(valor);
+          }
+
+          const estado = leer('estado');
+          const baseDeDatos = leer('base_de_datos.estado');
+          const version = leer('version');
+          const horaUtc = new Date().toISOString().replace('T', ' ').replace(/\.\d+Z$/, ' UTC');
+
+          // Validacion: cualquier fallo deja el job en rojo en el historial.
+          const fallos = [];
+          if (codigo !== '200') {
+            fallos.push(`El codigo HTTP fue ${codigo} y se esperaba 200.`);
+          }
+          if (estado !== 'ok') {
+            fallos.push(`El estado del servicio fue '${estado}' y se esperaba 'ok'.`);
+          }
+          if (baseDeDatos !== 'ok') {
+            fallos.push(`El estado de la base de datos fue '${baseDeDatos}' y se esperaba 'ok'.`);
+          }
+
+          const resultado = fallos.length === 0 ? 'correcto' : 'fallo';
+
+          const lineas = [
+            '## Monitoreo de la ruta de salud',
+            '',
+            `**Ruta:** \`GET /api/v1/salud\` (<${RUTA}>)`,
+            '',
+            `**Resultado:** ${resultado}`,
+            '',
+            '| Comprobación | Valor | Esperado |',
+            '|---|---|---|',
+            `| Fecha y hora (UTC) | ${horaUtc} | - |`,
+            `| Código HTTP | ${codigo} | 200 |`,
+            `| Estado del servicio | ${estado} | ok |`,
+            `| Estado de la base de datos | ${baseDeDatos} | ok |`,
+            `| Latencia | ${latenciaMs} ms | - |`,
+            `| Versión desplegada | ${version} | - |`,
+            '',
+          ];
+
+          if (fallos.length > 0) {
+            lineas.push('### Fallos detectados', '');
+            for (const fallo of fallos) {
+              lineas.push(`- ${fallo}`);
+            }
+            lineas.push('');
+          }
+
+          if (errorRed) {
+            lineas.push(`**Error de red:** ${errorRed}`, '');
+          }
+          if (errorJson) {
+            lineas.push(`**El cuerpo no es JSON válido:** ${errorJson}`, '');
+          }
+
+          lineas.push('### Cuerpo de la respuesta', '', '```json', cuerpo.trim(), '```', '');
+
+          const informe = lineas.join('\n') + '\n';
+
+          process.stdout.write(informe);
+
+          // Resumen visible en el panel de cada ejecucion (pestana Actions).
+          if (process.env.GITHUB_STEP_SUMMARY) {
+            appendFileSync(process.env.GITHUB_STEP_SUMMARY, informe, 'utf8');
+          }
+
+          if (fallos.length > 0) {
+            console.log('El monitoreo fallo: revisar el resumen de esta ejecucion.');
+            process.exitCode = 1;
+          } else {
+            console.log('El monitoreo paso: la ruta de salud responde 200 con estado ok.');
+          }
+          JS
+
+          node "$ARCHIVO"
