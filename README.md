@@ -222,20 +222,20 @@ flutter build apk --release --dart-define-from-file=config/local.json
 
 ### 9.1 APK publicado (GitHub Releases)
 
-El APK de distribución **no se versiona dentro del repositorio**: pesa 50,9 MB y
+El APK de distribución **no se versiona dentro del repositorio**: pesa 53,6 MB y
 engordaría el historial de Git. Se publica como **GitHub Release**:
 
-- **Página de la release:** <https://github.com/babaro1120-code/PROY-MEDIRESERVA/releases/tag/v1.0.0>
-- **Descarga directa:** <https://github.com/babaro1120-code/PROY-MEDIRESERVA/releases/download/v1.0.0/MEDIRESERVA_1.0.0_release_01-10-2026.apk>
-- **Archivo:** `MEDIRESERVA_1.0.0_release_01-10-2026.apk`
-- **Tamaño:** 53.413.698 bytes (50,94 MB)
-- **SHA-256:** `0bb339ac3664312c7ad8fbb19a85a3dc7c392e557cb5b52085421b3ea84ad6e7`
-- **Título de la release:** "MediReserva 1.0.0 — versión de demostración"
+- **Página de la release (última versión):** <https://github.com/babaro1120-code/PROY-MEDIRESERVA/releases/latest>
+- **Descarga directa:** <https://github.com/babaro1120-code/PROY-MEDIRESERVA/releases/download/v1.0.1/MEDIRESERVA_1.0.0_release_12-10-2026.apk>
+- **Archivo:** `MEDIRESERVA_1.0.0_release_12-10-2026.apk`
+- **Tamaño:** 56.233.594 bytes (53,63 MB)
+- **SHA-256:** `f6ecd58c9eb8e0b4aa38fa36d7557de205fd1a8ab3625b43fabdbfe26dec6cc1`
+- **Título de la release:** "MediReserva 1.0.1 — versión de demostración (12/10/2026)"
 
 Para comprobar que el archivo descargado es el correcto:
 
 ```powershell
-Get-FileHash .\MEDIRESERVA_1.0.0_release_01-10-2026.apk -Algorithm SHA256
+Get-FileHash .\MEDIRESERVA_1.0.0_release_12-10-2026.apk -Algorithm SHA256
 ```
 
 > **Nota honesta sobre la firma.** El APK está firmado con la clave de
