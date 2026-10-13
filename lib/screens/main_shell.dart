@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../services/medireserva_service.dart';
 import '../widgets/medireserva_ui.dart';
+import '../widgets/pestana_activa.dart';
 import 'admin_availability_screen.dart';
 import 'admin_doctors_screen.dart';
 import 'admin_home_screen.dart';
@@ -58,10 +59,34 @@ class _MainShellState extends State<MainShell> {
   String _rol = 'paciente';
   final Map<String, GlobalKey<NavigatorState>> _claves = {};
 
+  /// Pestaña activa publicada hacia las pantallas (ver [PestanaActiva]).
+  ///
+  /// El contenido vive en un `IndexedStack`, así que las pantallas no se
+  /// reconstruyen al cambiar de pestaña. Con este aviso cada una puede volver a
+  /// pedir sus datos cuando entra, en vez de quedarse con los de la primera
+  /// carga.
+  final ValueNotifier<PestanaSeleccionada> _pestana =
+      ValueNotifier(const PestanaSeleccionada(clave: 'inicio', tick: 0));
+
+  /// Cuántos avisos se publicaron. Es el `tick` del próximo aviso.
+  int _avisos = 0;
+
   @override
   void initState() {
     super.initState();
     _cargarRol();
+  }
+
+  @override
+  void dispose() {
+    _pestana.dispose();
+    super.dispose();
+  }
+
+  /// Avisa que la pestaña [clave] acaba de quedar visible. El `tick` siempre
+  /// sube, así que tocar la pestaña que ya está abierta también recarga.
+  void _avisarPestana(String clave) {
+    _pestana.value = PestanaSeleccionada(clave: clave, tick: ++_avisos);
   }
 
   /// El rol define qué módulos se ofrecen. Ante cualquier error se conserva el
@@ -146,6 +171,10 @@ class _MainShellState extends State<MainShell> {
     final destinos = _destinos;
     if (index < 0 || index >= destinos.length) return;
 
+    // El aviso va antes de cualquier salida: tocar la pestaña que ya está
+    // abierta es una forma cómoda de pedir los datos de nuevo.
+    _avisarPestana(destinos[index].clave);
+
     if (index == _index) {
       // Si ya estamos en la sección, volvemos a su raíz.
       _claveDe(destinos[index].clave)
@@ -161,19 +190,23 @@ class _MainShellState extends State<MainShell> {
     final destinos = _destinos;
     final actual = _index.clamp(0, destinos.length - 1);
 
-    // Cada sección conserva su propia pila de navegación.
-    final pantallas = IndexedStack(
-      index: actual,
-      children: [
-        for (final destino in destinos)
-          Navigator(
-            key: _claveDe(destino.clave),
-            onGenerateRoute: (settings) => MaterialPageRoute(
-              settings: settings,
-              builder: (_) => _raizDe(destino.clave),
+    // Cada sección conserva su propia pila de navegación. El aviso de pestaña
+    // activa va por encima para que las pantallas de adentro lo reciban.
+    final pantallas = PestanaActiva(
+      notifier: _pestana,
+      child: IndexedStack(
+        index: actual,
+        children: [
+          for (final destino in destinos)
+            Navigator(
+              key: _claveDe(destino.clave),
+              onGenerateRoute: (settings) => MaterialPageRoute(
+                settings: settings,
+                builder: (_) => _raizDe(destino.clave),
+              ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
 
     return LayoutBuilder(

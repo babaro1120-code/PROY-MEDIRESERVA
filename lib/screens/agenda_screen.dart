@@ -1,9 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../models/medireserva_models.dart';
+import '../services/medireserva_realtime.dart';
 import '../services/medireserva_service.dart';
 import '../widgets/medireserva_ui.dart';
+import '../widgets/pestana_activa.dart';
 import 'cancel_appointment_dialog.dart';
 
 /// Agenda de reservas para el profesional y el administrador.
@@ -27,16 +31,84 @@ class _AgendaScreenState extends State<AgendaScreen> {
 
   static const _filtros = ['Todas', 'Pendientes', 'Confirmadas', 'Atendidas'];
 
+  /// Clave de la pestaña del armazón a la que pertenece esta pantalla.
+  static const _claveDePestana = 'agenda';
+
+  /// Escucha en vivo las altas, los cambios y las bajas de `appointments`.
+  late final EscuchaDeCitas _escucha;
+
+  /// Último aviso de pestaña atendido (`null` hasta el primer registro).
+  int? _ultimoAviso;
+
   @override
   void initState() {
     super.initState();
     _future = _cargar();
+    // El bug reportado: la agenda se cargaba una sola vez y nunca más. Con esta
+    // suscripción, cuando el paciente reserva, cancela o el profesional cambia
+    // un estado, la lista se vuelve a pedir sola. Si el *realtime* no está
+    // disponible en la base, no pasa nada: la pantalla sigue igual y quedan el
+    // gesto de actualizar y la recarga al volver a la pestaña.
+    _escucha = EscuchaDeCitas(onCambio: _recargarPorCambio);
+    _escucha.suscribir();
   }
 
-  Future<List<AgendaItem>> _cargar() =>
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _recargarAlEntrarALaPestana();
+  }
+
+  @override
+  void dispose() {
+    // Sin esto, cada visita a la agenda dejaría un canal abierto.
+    unawaited(_escucha.cancelar());
+    super.dispose();
+  }
+
+  Future<List<AgendaItem>> _cargar() async =>
       MediReservaService(Supabase.instance.client).getAgenda();
 
   void _refrescar() => setState(() => _future = _cargar());
+
+  /// Recarga pedida por la suscripción en vivo.
+  void _recargarPorCambio() {
+    if (!mounted) return;
+    _refrescar();
+  }
+
+  /// Deslizar hacia abajo para actualizar.
+  ///
+  /// Además de recargar, espera a que la consulta termine para que el indicador
+  /// no quede girando. Si la consulta falla, el error lo muestra la lista: el
+  /// gesto nunca rompe la pantalla.
+  Future<void> _refrescarConGesto() async {
+    final future = _cargar();
+    if (!mounted) return;
+    setState(() => _future = future);
+    try {
+      await future;
+    } catch (_) {
+      // El mensaje ya lo muestra el `FutureBuilder`.
+    }
+  }
+
+  /// El armazón avisa cuando una pestaña queda visible. Como `IndexedStack`
+  /// mantiene la pantalla montada, sin este aviso volver a la agenda mostraría
+  /// los datos de la primera carga.
+  void _recargarAlEntrarALaPestana() {
+    final aviso = PestanaActiva.de(context);
+    if (debeRecargarPorPestana(
+      aviso: aviso,
+      clave: _claveDePestana,
+      ultimoTick: _ultimoAviso,
+    )) {
+      // No hace falta `setState`: `didChangeDependencies` siempre va seguido de
+      // un `build`.
+      _future = _cargar();
+    }
+    _ultimoAviso = aviso?.tick ?? _ultimoAviso;
+  }
 
   List<AgendaItem> _aplicarFiltro(List<AgendaItem> items) => switch (_filtro) {
         1 => items.where((a) => a.status == 'pending').toList(),
@@ -97,6 +169,7 @@ class _AgendaScreenState extends State<AgendaScreen> {
       title: 'Mi Agenda',
       step: '',
       showBack: widget.showBack,
+      onRefresh: _refrescarConGesto,
       child: Column(
         children: [
           SingleChildScrollView(

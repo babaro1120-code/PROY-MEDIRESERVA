@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../services/medireserva_realtime.dart';
 import '../services/medireserva_service.dart';
 import '../widgets/medireserva_ui.dart';
+import '../widgets/pestana_activa.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key, this.showBack = true});
@@ -17,10 +21,72 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   int filter = 0;
   late Future<List<Map<String, dynamic>>> future;
 
+  /// Clave de la pestaña del armazón a la que pertenece esta pantalla.
+  static const _claveDePestana = 'notificaciones';
+
+  /// Escucha en vivo las altas, los cambios y las bajas de `appointments`:
+  /// es el momento en el que el servidor crea los avisos de la reserva.
+  late final EscuchaDeCitas _escucha;
+
+  /// Último aviso de pestaña atendido (`null` hasta el primer registro).
+  int? _ultimoAviso;
+
   @override
   void initState() {
     super.initState();
-    future = MediReservaService(Supabase.instance.client).getNotifications();
+    future = _cargar();
+    // Defensivo: si el *realtime* no está disponible, la pantalla sigue igual y
+    // quedan el gesto de actualizar y la recarga al volver a la pestaña.
+    _escucha = EscuchaDeCitas(onCambio: _recargarPorCambio);
+    _escucha.suscribir();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _recargarAlEntrarALaPestana();
+  }
+
+  @override
+  void dispose() {
+    // Sin esto, cada visita a los avisos dejaría un canal abierto.
+    unawaited(_escucha.cancelar());
+    super.dispose();
+  }
+
+  Future<List<Map<String, dynamic>>> _cargar() async =>
+      MediReservaService(Supabase.instance.client).getNotifications();
+
+  /// Recarga pedida por la suscripción en vivo.
+  void _recargarPorCambio() {
+    if (!mounted) return;
+    setState(() => future = _cargar());
+  }
+
+  /// Deslizar hacia abajo para actualizar (funciona con la lista vacía).
+  Future<void> _refrescarConGesto() async {
+    final nueva = _cargar();
+    if (!mounted) return;
+    setState(() => future = nueva);
+    try {
+      await nueva;
+    } catch (_) {
+      // El error ya lo muestra el `FutureBuilder`.
+    }
+  }
+
+  /// Recarga al entrar a la pestaña: el `IndexedStack` del armazón mantiene esta
+  /// pantalla montada y no la vuelve a construir.
+  void _recargarAlEntrarALaPestana() {
+    final aviso = PestanaActiva.de(context);
+    if (debeRecargarPorPestana(
+      aviso: aviso,
+      clave: _claveDePestana,
+      ultimoTick: _ultimoAviso,
+    )) {
+      future = _cargar();
+    }
+    _ultimoAviso = aviso?.tick ?? _ultimoAviso;
   }
 
   @override
@@ -29,6 +95,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       title: 'Notificaciones',
       step: '',
       showBack: widget.showBack,
+      onRefresh: _refrescarConGesto,
       child: Column(
         children: [
           Row(

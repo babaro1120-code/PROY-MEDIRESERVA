@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 const kMediBlue = Color(0xFF075BD8);
@@ -5,6 +6,21 @@ const kMediDark = Color(0xFF122B6B);
 const kMediText = Color(0xFF16284A);
 const kMediMuted = Color(0xFF5B6A80);
 const kMediBg = Color(0xFFF5F8FC);
+
+/// Permite arrastrar la pantalla con el mouse.
+///
+/// En la web de escritorio el mouse no arrastra por defecto (solo desplaza con
+/// la rueda), y sin arrastre no hay gesto de actualizar. Se habilita únicamente
+/// en las pantallas que piden `onRefresh`, no en toda la aplicación.
+class _ArrastreConMouse extends MaterialScrollBehavior {
+  const _ArrastreConMouse();
+
+  @override
+  Set<PointerDeviceKind> get dragDevices => <PointerDeviceKind>{
+        ...super.dragDevices,
+        PointerDeviceKind.mouse,
+      };
+}
 
 class MediReservaPage extends StatelessWidget {
   const MediReservaPage({
@@ -14,6 +30,7 @@ class MediReservaPage extends StatelessWidget {
     required this.child,
     this.onBack,
     this.showBack = true,
+    this.onRefresh,
   });
 
   final String title;
@@ -22,17 +39,70 @@ class MediReservaPage extends StatelessWidget {
   final VoidCallback? onBack;
   final bool showBack;
 
+  /// Si se pasa, la pantalla se puede actualizar deslizando hacia abajo.
+  ///
+  /// Es la red de seguridad para cuando el *realtime* no está disponible: el
+  /// usuario fuerza la recarga a mano. Si es `null`, el árbol de la pantalla
+  /// queda exactamente igual que antes de existir este parámetro.
+  final Future<void> Function()? onRefresh;
+
   @override
   Widget build(BuildContext context) {
+    final refrescar = onRefresh;
+
+    // Sin `onRefresh` el árbol queda exactamente igual que siempre: este cambio
+    // no toca a las pantallas que no piden el gesto de actualizar.
+    if (refrescar == null) {
+      return Scaffold(
+        backgroundColor: kMediBg,
+        body: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(10),
+              child: _tarjeta(context),
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: kMediBg,
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(10),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 380),
-              child: Container(
+        child: RefreshIndicator(
+          color: kMediBlue,
+          onRefresh: refrescar,
+          child: ScrollConfiguration(
+            behavior: const _ArrastreConMouse(),
+            child: LayoutBuilder(
+              builder: (context, constraints) => SingleChildScrollView(
+                // Una lista vacía no llena la pantalla y entonces no se deja
+                // arrastrar: con esta física el gesto de actualizar funciona
+                // igual, y el alto mínimo hace que toda la vista responda al
+                // arrastre aunque el contenido sea corto.
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(10),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: constraints.maxHeight.isFinite &&
+                            constraints.maxHeight > 20
+                        ? constraints.maxHeight - 20
+                        : 0,
+                  ),
+                  child: Center(child: _tarjeta(context)),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// La tarjeta blanca con el título y el contenido de la pantalla.
+  Widget _tarjeta(BuildContext context) => ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 380),
+        child: Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
@@ -104,12 +174,7 @@ class MediReservaPage extends StatelessWidget {
                   ),
                 ),
               ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+      );
 }
 
 class MediButton extends StatelessWidget {

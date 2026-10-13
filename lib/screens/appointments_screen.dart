@@ -1,9 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../models/medireserva_models.dart';
+import '../services/medireserva_realtime.dart';
 import '../services/medireserva_service.dart';
 import '../widgets/medireserva_ui.dart';
+import '../widgets/pestana_activa.dart';
 import 'cancel_appointment_dialog.dart';
 import 'reservation_start_screen.dart';
 
@@ -18,15 +22,74 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
   int tab = 0;
   late Future<List<Appointment>> _future;
 
+  /// Clave de la pestaña del armazón a la que pertenece esta pantalla.
+  static const _claveDePestana = 'citas';
+
+  /// Escucha en vivo las altas, los cambios y las bajas de `appointments`.
+  late final EscuchaDeCitas _escucha;
+
+  /// Último aviso de pestaña atendido (`null` hasta el primer registro).
+  int? _ultimoAviso;
+
   @override
   void initState() {
     super.initState();
     _future = _load();
+    // La lista se actualiza sola cuando el profesional confirma o atiende una
+    // cita. Es defensivo: si el *realtime* no está disponible, la pantalla
+    // funciona igual que siempre.
+    _escucha = EscuchaDeCitas(onCambio: _recargarPorCambio);
+    _escucha.suscribir();
   }
 
-  Future<List<Appointment>> _load() =>
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _recargarAlEntrarALaPestana();
+  }
+
+  @override
+  void dispose() {
+    // Sin esto, cada visita a las citas dejaría un canal abierto.
+    unawaited(_escucha.cancelar());
+    super.dispose();
+  }
+
+  Future<List<Appointment>> _load() async =>
       MediReservaService(Supabase.instance.client).getMyAppointments();
   void _refresh() => setState(() => _future = _load());
+
+  /// Recarga pedida por la suscripción en vivo.
+  void _recargarPorCambio() {
+    if (!mounted) return;
+    _refresh();
+  }
+
+  /// Deslizar hacia abajo para actualizar (funciona con la lista vacía).
+  Future<void> _refrescarConGesto() async {
+    final future = _load();
+    if (!mounted) return;
+    setState(() => _future = future);
+    try {
+      await future;
+    } catch (_) {
+      // El error ya lo muestra el `FutureBuilder`.
+    }
+  }
+
+  /// Recarga al entrar a la pestaña: el `IndexedStack` del armazón mantiene esta
+  /// pantalla montada y no la vuelve a construir.
+  void _recargarAlEntrarALaPestana() {
+    final aviso = PestanaActiva.de(context);
+    if (debeRecargarPorPestana(
+      aviso: aviso,
+      clave: _claveDePestana,
+      ultimoTick: _ultimoAviso,
+    )) {
+      _future = _load();
+    }
+    _ultimoAviso = aviso?.tick ?? _ultimoAviso;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,6 +97,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
         title: 'Mis Citas',
         step: '',
         showBack: widget.showBack,
+        onRefresh: _refrescarConGesto,
         child: Column(children: [
           Row(children: [
             _tab('Próximas', 0),
