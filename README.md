@@ -226,12 +226,17 @@ El APK de distribución **no se versiona dentro del repositorio**: pesa 54,1 MB 
 engordaría el historial de Git. Se publica como **GitHub Release**:
 
 - **Página de la release (última versión):** <https://github.com/babaro1120-code/PROY-MEDIRESERVA/releases/latest>
-- **Descarga directa:** <https://github.com/babaro1120-code/PROY-MEDIRESERVA/releases/download/v1.0.3/MEDIRESERVA_1.0.0_release_28-10-2026.apk>
+- **Descarga directa:** <https://github.com/babaro1120-code/PROY-MEDIRESERVA/releases/download/v1.0.4/MEDIRESERVA_1.0.0_release_28-10-2026.apk>
 - **Archivo:** `MEDIRESERVA_1.0.0_release_28-10-2026.apk`
-- **Tamaño:** 56.712.242 bytes (54,09 MB)
-- **SHA-256:** `1bd920578cc8e693216b20fdc2eb28c5b162528ce7b248f6b7b3ecf61f8a518c`
-- **Título de la release:** "MediReserva 1.0.3 — ícono y nombre corregidos (28/10/2026)"
-- **Novedades de esta versión:** **ícono nuevo** (cruz médica blanca con una línea de pulso sobre el azul de la marca, en lugar del logo de Flutter) y **nombre del lanzador corregido** (antes «Proyecto Final MEDIRESERVA», ahora solo «MEDIRESERVA»).
+- **Tamaño:** 56.712.338 bytes (54,09 MB)
+- **SHA-256:** `4f8f6202ba734067366a8ca33910dda33a01c0cda107cc5e7e7b809d84310de9`
+- **Título de la release:** "MediReserva 1.0.4 — ícono de acceso y favicon (28/10/2026)"
+- **Novedades de esta versión:** en la pantalla de **inicio de sesión** ahora se
+  muestra el **corazón con pulso** en el círculo (antes había un signo «+»
+  genérico); se mantiene el **ícono propio** de la aplicación (cruz médica blanca
+  con una línea de pulso sobre el azul de la marca, en lugar del logo de Flutter)
+  y el **nombre del lanzador** «MEDIRESERVA». La **versión web** ya sirve el
+  **favicon nuevo** y los íconos de la PWA.
 - **Actualización en vivo:** la agenda del profesional y las listas de citas y
   avisos se refrescan solas cuando alguien reserva, confirma o cancela; además
   se puede deslizar hacia abajo para actualizar y tocar la pestaña para recargar,
