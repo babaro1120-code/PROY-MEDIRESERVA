@@ -235,7 +235,8 @@ class _Logo extends StatelessWidget {
         height: 86,
         decoration:
             const BoxDecoration(shape: BoxShape.circle, color: kMediBlue),
-        child:
-            const Center(child: Icon(Icons.add, color: Colors.white, size: 52)),
+        child: const Center(
+          child: Icon(Icons.monitor_heart, color: Colors.white, size: 50),
+        ),
       );
 }
