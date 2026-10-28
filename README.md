@@ -226,11 +226,12 @@ El APK de distribución **no se versiona dentro del repositorio**: pesa 54,1 MB 
 engordaría el historial de Git. Se publica como **GitHub Release**:
 
 - **Página de la release (última versión):** <https://github.com/babaro1120-code/PROY-MEDIRESERVA/releases/latest>
-- **Descarga directa:** <https://github.com/babaro1120-code/PROY-MEDIRESERVA/releases/download/v1.0.2/MEDIRESERVA_1.0.0_release_16-10-2026.apk>
-- **Archivo:** `MEDIRESERVA_1.0.0_release_16-10-2026.apk`
-- **Tamaño:** 56.692.346 bytes (54,07 MB)
-- **SHA-256:** `0bc5fe9cd893b34beed1eb7c17815f8f5f4090e161e2236c313b41c66d3b8133`
-- **Título de la release:** "MediReserva 1.0.2 — actualización en vivo (16/10/2026)"
+- **Descarga directa:** <https://github.com/babaro1120-code/PROY-MEDIRESERVA/releases/download/v1.0.3/MEDIRESERVA_1.0.0_release_28-10-2026.apk>
+- **Archivo:** `MEDIRESERVA_1.0.0_release_28-10-2026.apk`
+- **Tamaño:** 56.712.242 bytes (54,09 MB)
+- **SHA-256:** `1bd920578cc8e693216b20fdc2eb28c5b162528ce7b248f6b7b3ecf61f8a518c`
+- **Título de la release:** "MediReserva 1.0.3 — ícono y nombre corregidos (28/10/2026)"
+- **Novedades de esta versión:** **ícono nuevo** (cruz médica blanca con una línea de pulso sobre el azul de la marca, en lugar del logo de Flutter) y **nombre del lanzador corregido** (antes «Proyecto Final MEDIRESERVA», ahora solo «MEDIRESERVA»).
 - **Actualización en vivo:** la agenda del profesional y las listas de citas y
   avisos se refrescan solas cuando alguien reserva, confirma o cancela; además
   se puede deslizar hacia abajo para actualizar y tocar la pestaña para recargar,
@@ -239,7 +240,7 @@ engordaría el historial de Git. Se publica como **GitHub Release**:
 Para comprobar que el archivo descargado es el correcto:
 
 ```powershell
-Get-FileHash .\MEDIRESERVA_1.0.0_release_16-10-2026.apk -Algorithm SHA256
+Get-FileHash .\MEDIRESERVA_1.0.0_release_28-10-2026.apk -Algorithm SHA256
 ```
 
 > **Nota honesta sobre la firma.** El APK está firmado con la clave de
